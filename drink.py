@@ -68,8 +68,7 @@ class HydrationReminder:
 
         # 隐藏状态
         self.hidden_mode = False
-        # 隐藏状态下的UI元素
-        self.hidden_frame = None
+        self.hidden_canvas_widget = None
         
         # 动画控制变量
         self.animation_id = None
@@ -777,6 +776,21 @@ class HydrationReminder:
         else:
             self.enter_hidden_mode()
 
+    def _draw_rounded_rect(self, canvas, x1, y1, x2, y2, radius, **kwargs):
+        """在Canvas上绘制圆角矩形"""
+        points = [
+            x1 + radius, y1,
+            x2 - radius, y1,
+            x2, y1, x2, y1 + radius,
+            x2, y2 - radius,
+            x2, y2, x2 - radius, y2,
+            x1 + radius, y2,
+            x1, y2, x1, y2 - radius,
+            x1, y1 + radius,
+            x1, y1, x1 + radius, y1,
+        ]
+        return canvas.create_polygon(points, smooth=True, **kwargs)
+
     def enter_hidden_mode(self):
         """进入隐藏状态"""
         self.hidden_mode = True
@@ -791,63 +805,46 @@ class HydrationReminder:
         if self.weather_canvas_visible:
             self.weather_canvas.pack_forget()
 
-        # 创建隐藏状态的显示框
-        if self.hidden_frame is None:
-            self.hidden_frame = tk.Frame(self.root, bg='#1a1a1a', padx=10, pady=8)
-            self.hidden_label = tk.Label(
-                self.hidden_frame,
-                bg='#1a1a1a',
-                highlightthickness=0,
-            )
-            self.hidden_label.pack()
-            # 绑定事件到隐藏框
-            self.hidden_frame.bind("<Button-1>", self.start_drag)
-            self.hidden_frame.bind("<B1-Motion>", self.drag_window)
-            self.hidden_frame.bind("<ButtonRelease-1>", self.save_position)
-            self.hidden_frame.bind("<Double-Button-1>", self.on_double_click)
-            self.hidden_label.bind("<Button-1>", self.start_drag)
-            self.hidden_label.bind("<B1-Motion>", self.drag_window)
-            self.hidden_label.bind("<ButtonRelease-1>", self.save_position)
-            self.hidden_label.bind("<Double-Button-1>", self.on_double_click)
+        # 创建隐藏状态的Canvas（单一Canvas实现圆角背景+文字）
+        if self.hidden_canvas_widget is not None:
+            self.hidden_canvas_widget.destroy()
 
-        # 用不同大小的z字体来凸显隐藏状态
-        # 使用Canvas绘制不同大小的z
-        if hasattr(self, 'hidden_canvas'):
-            self.hidden_canvas.destroy()
-        self.hidden_canvas = tk.Canvas(
-            self.hidden_frame,
-            bg='#1a1a1a',
+        bg_color = '#3a3a3a'
+        self.hidden_canvas_widget = tk.Canvas(
+            self.root,
+            bg=bg_color,
             highlightthickness=0,
-            width=70,
-            height=30,
+            width=50,
+            height=22,
         )
-        # 绘制三个不同大小的z
-        self.hidden_canvas.create_text(12, 20, text="z", font=("Arial", 10), fill="#aaaaaa", anchor="s")
-        self.hidden_canvas.create_text(35, 20, text="z", font=("Arial", 14), fill="#aaaaaa", anchor="s")
-        self.hidden_canvas.create_text(58, 20, text="z", font=("Arial", 18), fill="#aaaaaa", anchor="s")
-        self.hidden_canvas.pack()
+        # 绘制圆角矩形背景
+        self._draw_rounded_rect(self.hidden_canvas_widget, 0, 0, 50, 22, 6, fill=bg_color, outline=bg_color)
+        # 绘制三个递增大小的z
+        self.hidden_canvas_widget.create_text(10, 17, text="z", font=("Arial", 7), fill="#d0d0d0", anchor="s")
+        self.hidden_canvas_widget.create_text(25, 17, text="z", font=("Arial", 9), fill="#d0d0d0", anchor="s")
+        self.hidden_canvas_widget.create_text(40, 17, text="z", font=("Arial", 12), fill="#d0d0d0", anchor="s")
 
-        # 绑定事件到Canvas
-        self.hidden_canvas.bind("<Button-1>", self.start_drag)
-        self.hidden_canvas.bind("<B1-Motion>", self.drag_window)
-        self.hidden_canvas.bind("<ButtonRelease-1>", self.save_position)
-        self.hidden_canvas.bind("<Double-Button-1>", self.on_double_click)
+        # 绑定事件
+        self.hidden_canvas_widget.bind("<Button-1>", self.start_drag)
+        self.hidden_canvas_widget.bind("<B1-Motion>", self.drag_window)
+        self.hidden_canvas_widget.bind("<ButtonRelease-1>", self.save_position)
+        self.hidden_canvas_widget.bind("<Double-Button-1>", self.on_double_click)
 
-        self.hidden_frame.pack()
+        self.hidden_canvas_widget.pack()
 
         # 设置半透明
-        self.root.attributes("-alpha", 0.5)
-        # 关闭白色透明色，让黑色背景可见
+        self.root.attributes("-alpha", 0.6)
+        # 关闭白色透明色，让背景可见
         self.root.wm_attributes("-transparentcolor", '')
-        self.root.config(bg='#1a1a1a')
+        self.root.config(bg=bg_color)
 
     def exit_hidden_mode(self):
         """退出隐藏状态"""
         self.hidden_mode = False
 
-        # 隐藏隐藏状态的显示框
-        if self.hidden_frame is not None:
-            self.hidden_frame.pack_forget()
+        # 隐藏Canvas
+        if self.hidden_canvas_widget is not None:
+            self.hidden_canvas_widget.pack_forget()
 
         # 恢复透明色设置
         self.root.config(bg='white')
