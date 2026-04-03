@@ -65,6 +65,11 @@ class HydrationReminder:
         # 初始化提醒状态
         self.reminder_active = False
         self.reminder_thread = None
+
+        # 隐藏状态
+        self.hidden_mode = False
+        # 隐藏状态下的UI元素
+        self.hidden_frame = None
         
         # 动画控制变量
         self.animation_id = None
@@ -106,6 +111,7 @@ class HydrationReminder:
         self.gif_label.bind("<Button-1>", self.start_drag)
         self.gif_label.bind("<B1-Motion>", self.drag_window)
         self.gif_label.bind("<ButtonRelease-1>", self.save_position)  # 添加释放鼠标事件
+        self.gif_label.bind("<Double-Button-1>", self.on_double_click)  # 双击切换隐藏状态
         
         # 定位窗口到上次保存的位置或默认位置
         self.position_window()
@@ -761,6 +767,104 @@ class HydrationReminder:
             # 继续动画
             self.animation_id = self.root.after(100, self.animate_reminder_gif)
     
+    def on_double_click(self, event):
+        """双击切换隐藏状态（仅在正常状态或隐藏状态下有效）"""
+        if self.reminder_active:
+            # 喝水提醒状态下双击无效
+            return
+        if self.hidden_mode:
+            self.exit_hidden_mode()
+        else:
+            self.enter_hidden_mode()
+
+    def enter_hidden_mode(self):
+        """进入隐藏状态"""
+        self.hidden_mode = True
+
+        # 取消GIF动画
+        if self.animation_id:
+            self.root.after_cancel(self.animation_id)
+            self.animation_id = None
+
+        # 隐藏GIF和天气
+        self.gif_label.pack_forget()
+        if self.weather_canvas_visible:
+            self.weather_canvas.pack_forget()
+
+        # 创建隐藏状态的显示框
+        if self.hidden_frame is None:
+            self.hidden_frame = tk.Frame(self.root, bg='#1a1a1a', padx=10, pady=8)
+            self.hidden_label = tk.Label(
+                self.hidden_frame,
+                bg='#1a1a1a',
+                highlightthickness=0,
+            )
+            self.hidden_label.pack()
+            # 绑定事件到隐藏框
+            self.hidden_frame.bind("<Button-1>", self.start_drag)
+            self.hidden_frame.bind("<B1-Motion>", self.drag_window)
+            self.hidden_frame.bind("<ButtonRelease-1>", self.save_position)
+            self.hidden_frame.bind("<Double-Button-1>", self.on_double_click)
+            self.hidden_label.bind("<Button-1>", self.start_drag)
+            self.hidden_label.bind("<B1-Motion>", self.drag_window)
+            self.hidden_label.bind("<ButtonRelease-1>", self.save_position)
+            self.hidden_label.bind("<Double-Button-1>", self.on_double_click)
+
+        # 用不同大小的z字体来凸显隐藏状态
+        # 使用Canvas绘制不同大小的z
+        if hasattr(self, 'hidden_canvas'):
+            self.hidden_canvas.destroy()
+        self.hidden_canvas = tk.Canvas(
+            self.hidden_frame,
+            bg='#1a1a1a',
+            highlightthickness=0,
+            width=70,
+            height=30,
+        )
+        # 绘制三个不同大小的z
+        self.hidden_canvas.create_text(12, 20, text="z", font=("Arial", 10), fill="#aaaaaa", anchor="s")
+        self.hidden_canvas.create_text(35, 20, text="z", font=("Arial", 14), fill="#aaaaaa", anchor="s")
+        self.hidden_canvas.create_text(58, 20, text="z", font=("Arial", 18), fill="#aaaaaa", anchor="s")
+        self.hidden_canvas.pack()
+
+        # 绑定事件到Canvas
+        self.hidden_canvas.bind("<Button-1>", self.start_drag)
+        self.hidden_canvas.bind("<B1-Motion>", self.drag_window)
+        self.hidden_canvas.bind("<ButtonRelease-1>", self.save_position)
+        self.hidden_canvas.bind("<Double-Button-1>", self.on_double_click)
+
+        self.hidden_frame.pack()
+
+        # 设置半透明
+        self.root.attributes("-alpha", 0.5)
+        # 关闭白色透明色，让黑色背景可见
+        self.root.wm_attributes("-transparentcolor", '')
+        self.root.config(bg='#1a1a1a')
+
+    def exit_hidden_mode(self):
+        """退出隐藏状态"""
+        self.hidden_mode = False
+
+        # 隐藏隐藏状态的显示框
+        if self.hidden_frame is not None:
+            self.hidden_frame.pack_forget()
+
+        # 恢复透明色设置
+        self.root.config(bg='white')
+        self.root.wm_attributes("-transparentcolor", 'white')
+
+        # 恢复天气和GIF
+        if self.weather_canvas_visible:
+            self.weather_canvas.pack()
+        self.gif_label.pack()
+
+        # 恢复透明度
+        self.root.attributes("-alpha", 0.8)
+
+        # 重新启动GIF动画
+        self.current_frame = 0
+        self.animate_gif()
+
     def start_drag(self, event):
         """开始拖拽"""
         self.start_x = event.x
@@ -775,6 +879,11 @@ class HydrationReminder:
     
     def show_reminder(self):
         """显示提醒"""
+        # 如果处于隐藏状态，先退出隐藏状态，提醒结束后会自动回到隐藏状态
+        self._was_hidden = self.hidden_mode
+        if self.hidden_mode:
+            self.exit_hidden_mode()
+
         self.reminder_active = True
         
         # 取消之前的动画
@@ -809,17 +918,22 @@ class HydrationReminder:
         self.label.config(text="")
         self.root.attributes("-alpha", 0.8)
         self.reminder_active = False
-        
+
         # 取消之前的动画
         if self.animation_id:
             self.root.after_cancel(self.animation_id)
             self.animation_id = None
-        
+
         # 切换回普通GIF
         self.current_frame = 0
         self.gif_label.configure(image=self.gif_frames[0])
         # 重新开始普通GIF动画
         self.animate_gif()
+
+        # 如果提醒前处于隐藏状态，恢复隐藏状态
+        if getattr(self, '_was_hidden', False):
+            self._was_hidden = False
+            self.enter_hidden_mode()
     
     def reminder_worker(self):
         """提醒工作线程 - 无限循环，不退出"""
