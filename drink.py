@@ -815,8 +815,8 @@ class HydrationReminder:
         transparent_color = '#f0f0f0'
         bg_color = '#ffffff'
         text_color = '#4170E0'
-        canvas_w, canvas_h = 70, 44
-        radius = 20
+        canvas_w, canvas_h = 35, 22
+        radius = 10
 
         self.hidden_canvas_widget = tk.Canvas(
             self.root,
@@ -828,9 +828,9 @@ class HydrationReminder:
         # 绘制圆角矩形背景（Canvas背景是透明色，只有圆角矩形区域可见）
         self._draw_rounded_rect(self.hidden_canvas_widget, 0, 0, canvas_w, canvas_h, radius, fill=bg_color, outline=bg_color)
         # 绘制三个递增大小的z，使用tag标记以便动画控制显隐
-        self.hidden_canvas_widget.create_text(16, 34, text="z", font=("Arial", 12), fill=text_color, anchor="s", tags="z1")
-        self.hidden_canvas_widget.create_text(33, 34, text="z", font=("Arial", 17), fill=text_color, anchor="s", tags="z2")
-        self.hidden_canvas_widget.create_text(52, 34, text="z", font=("Arial", 23), fill=text_color, anchor="s", tags="z3")
+        self.hidden_canvas_widget.create_text(8, 17, text="z", font=("Arial", 6), fill=text_color, anchor="s", tags="z1")
+        self.hidden_canvas_widget.create_text(17, 17, text="z", font=("Arial", 8), fill=text_color, anchor="s", tags="z2")
+        self.hidden_canvas_widget.create_text(27, 17, text="z", font=("Arial", 11), fill=text_color, anchor="s", tags="z3")
 
         # 绑定事件
         self.hidden_canvas_widget.bind("<Button-1>", self.start_drag)
@@ -859,7 +859,7 @@ class HydrationReminder:
         self.hidden_canvas_widget.itemconfigure("z1", state='normal')
         self.hidden_canvas_widget.itemconfigure("z2", state='normal' if self.hidden_anim_step >= 2 else 'hidden')
         self.hidden_canvas_widget.itemconfigure("z3", state='normal' if self.hidden_anim_step >= 3 else 'hidden')
-        self.hidden_anim_id = self.root.after(1600, self.animate_hidden_z)
+        self.hidden_anim_id = self.root.after(1200, self.animate_hidden_z)
 
     def exit_hidden_mode(self):
         """退出隐藏状态"""
