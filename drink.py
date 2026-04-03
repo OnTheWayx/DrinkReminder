@@ -384,13 +384,45 @@ class HydrationReminder:
         # 获取当前窗口位置
         current_x = self.root.winfo_x()
         current_y = self.root.winfo_y()
-        
-        # 更新实例变量
-        self.window_x = current_x
-        self.window_y = current_y
-        
-        # 保存配置
-        self.save_config()
+
+        # 边界检查：考虑多显示器情况，只有在合理范围内的位置才保存
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
+        window_width = 100
+        window_height = 100
+
+        # 定义可见区域的最小像素数（窗口至少要有这么多像素可见才保存）
+        min_visible = 20
+
+        # 多显示器支持：允许窗口在虚拟屏幕范围内
+        # 假设最多支持左右各一个显示器，上下各一个显示器的配置
+        # 虚拟屏幕范围：x 可以从 -screen_width 到 2*screen_width
+        #               y 可以从 -screen_height 到 2*screen_height
+        virtual_left = -screen_width
+        virtual_right = 2 * screen_width
+        virtual_top = -screen_height
+        virtual_bottom = 2 * screen_height
+
+        # 检查窗口是否至少有一部分在虚拟屏幕范围内
+        # 窗口右边缘必须在虚拟屏幕左边界右侧至少 min_visible 像素
+        # 窗口左边缘必须在虚拟屏幕右边界左侧至少 min_visible 像素
+        # 窗口下边缘必须在虚拟屏幕上边界下方至少 min_visible 像素
+        # 窗口上边缘必须在虚拟屏幕下边界上方至少 min_visible 像素
+        is_visible = (
+            current_x + window_width > virtual_left + min_visible and  # 右边缘在左边界右侧
+            current_x < virtual_right - min_visible and                # 左边缘在右边界左侧
+            current_y + window_height > virtual_top + min_visible and  # 下边缘在上边界下方
+            current_y < virtual_bottom - min_visible                   # 上边缘在下边界上方
+        )
+
+        if is_visible:
+            # 位置在有效范围内，保存到配置
+            self.window_x = current_x
+            self.window_y = current_y
+            self.save_config()
+        else:
+            # 位置超出合理边界，不保存
+            print(f"窗口位置超出合理边界，不保存：x={current_x}, y={current_y}")
     
     def load_gif(self):
         """加载GIF动画"""
@@ -709,15 +741,6 @@ class HydrationReminder:
         """拖拽窗口"""
         x = self.root.winfo_x() + event.x - self.start_x
         y = self.root.winfo_y() + event.y - self.start_y
-
-        # 边界限制：确保窗口至少有一部分在屏幕内
-        screen_width = self.root.winfo_screenwidth()
-        screen_height = self.root.winfo_screenheight()
-        window_width = 100
-        window_height = 100
-
-        x = max(-window_width + 20, min(x, screen_width - 20))
-        y = max(0, min(y, screen_height - 20))
 
         self.root.geometry(f"+{x}+{y}")
     
