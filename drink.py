@@ -779,19 +779,21 @@ class HydrationReminder:
             self.enter_hidden_mode()
 
     def _draw_rounded_rect(self, canvas, x1, y1, x2, y2, radius, **kwargs):
-        """在Canvas上绘制圆角矩形"""
-        points = [
-            x1 + radius, y1,
-            x2 - radius, y1,
-            x2, y1, x2, y1 + radius,
-            x2, y2 - radius,
-            x2, y2, x2 - radius, y2,
-            x1 + radius, y2,
-            x1, y2, x1, y2 - radius,
-            x1, y1 + radius,
-            x1, y1, x1 + radius, y1,
-        ]
-        return canvas.create_polygon(points, smooth=True, **kwargs)
+        """在Canvas上绘制圆角矩形（使用arc实现平滑圆角）"""
+        # 四个圆角用arc绘制，中间用矩形填充
+        r = radius
+        # 移除outline避免边框干扰
+        kw = dict(kwargs)
+        outline = kw.pop('outline', kw.get('fill', ''))
+        # 四个角的arc
+        canvas.create_arc(x1, y1, x1 + 2*r, y1 + 2*r, start=90, extent=90, style='pieslice', outline=outline, **kw)
+        canvas.create_arc(x2 - 2*r, y1, x2, y1 + 2*r, start=0, extent=90, style='pieslice', outline=outline, **kw)
+        canvas.create_arc(x1, y2 - 2*r, x1 + 2*r, y2, start=180, extent=90, style='pieslice', outline=outline, **kw)
+        canvas.create_arc(x2 - 2*r, y2 - 2*r, x2, y2, start=270, extent=90, style='pieslice', outline=outline, **kw)
+        # 三个矩形填充中间区域
+        canvas.create_rectangle(x1 + r, y1, x2 - r, y2, outline=outline, **kw)
+        canvas.create_rectangle(x1, y1 + r, x1 + r, y2 - r, outline=outline, **kw)
+        canvas.create_rectangle(x2 - r, y1 + r, x2, y2 - r, outline=outline, **kw)
 
     def enter_hidden_mode(self):
         """进入隐藏状态"""
@@ -816,7 +818,7 @@ class HydrationReminder:
         bg_color = '#ffffff'
         text_color = '#4170E0'
         canvas_w, canvas_h = 70, 44
-        radius = 18
+        radius = 22
 
         self.hidden_canvas_widget = tk.Canvas(
             self.root,
@@ -856,12 +858,10 @@ class HydrationReminder:
             return
         self.hidden_anim_step = (self.hidden_anim_step % 3) + 1
         # step 1: 只显示z1, step 2: 显示z1+z2, step 3: 显示z1+z2+z3
-        transparent_color = '#f0f0f0'
-        text_color = '#4170E0'
-        self.hidden_canvas_widget.itemconfigure("z1", fill=text_color)
-        self.hidden_canvas_widget.itemconfigure("z2", fill=text_color if self.hidden_anim_step >= 2 else transparent_color)
-        self.hidden_canvas_widget.itemconfigure("z3", fill=text_color if self.hidden_anim_step >= 3 else transparent_color)
-        self.hidden_anim_id = self.root.after(400, self.animate_hidden_z)
+        self.hidden_canvas_widget.itemconfigure("z1", state='normal')
+        self.hidden_canvas_widget.itemconfigure("z2", state='normal' if self.hidden_anim_step >= 2 else 'hidden')
+        self.hidden_canvas_widget.itemconfigure("z3", state='normal' if self.hidden_anim_step >= 3 else 'hidden')
+        self.hidden_anim_id = self.root.after(800, self.animate_hidden_z)
 
     def exit_hidden_mode(self):
         """退出隐藏状态"""
