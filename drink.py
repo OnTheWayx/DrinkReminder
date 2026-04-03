@@ -809,20 +809,26 @@ class HydrationReminder:
         if self.hidden_canvas_widget is not None:
             self.hidden_canvas_widget.destroy()
 
+        # 使用特殊透明色作为Canvas背景，让圆角外的区域透明
+        transparent_color = '#f0f0f0'
         bg_color = '#3a3a3a'
+        text_color = '#d0d0d0'
+        canvas_w, canvas_h = 50, 22
+        radius = 6
+
         self.hidden_canvas_widget = tk.Canvas(
             self.root,
-            bg=bg_color,
+            bg=transparent_color,
             highlightthickness=0,
-            width=50,
-            height=22,
+            width=canvas_w,
+            height=canvas_h,
         )
-        # 绘制圆角矩形背景
-        self._draw_rounded_rect(self.hidden_canvas_widget, 0, 0, 50, 22, 6, fill=bg_color, outline=bg_color)
+        # 绘制圆角矩形背景（Canvas背景是透明色，只有圆角矩形区域可见）
+        self._draw_rounded_rect(self.hidden_canvas_widget, 0, 0, canvas_w, canvas_h, radius, fill=bg_color, outline=bg_color)
         # 绘制三个递增大小的z
-        self.hidden_canvas_widget.create_text(10, 17, text="z", font=("Arial", 7), fill="#d0d0d0", anchor="s")
-        self.hidden_canvas_widget.create_text(25, 17, text="z", font=("Arial", 9), fill="#d0d0d0", anchor="s")
-        self.hidden_canvas_widget.create_text(40, 17, text="z", font=("Arial", 12), fill="#d0d0d0", anchor="s")
+        self.hidden_canvas_widget.create_text(10, 17, text="z", font=("Arial", 7), fill=text_color, anchor="s")
+        self.hidden_canvas_widget.create_text(25, 17, text="z", font=("Arial", 9), fill=text_color, anchor="s")
+        self.hidden_canvas_widget.create_text(40, 17, text="z", font=("Arial", 12), fill=text_color, anchor="s")
 
         # 绑定事件
         self.hidden_canvas_widget.bind("<Button-1>", self.start_drag)
@@ -832,11 +838,11 @@ class HydrationReminder:
 
         self.hidden_canvas_widget.pack()
 
+        # 将窗口背景和透明色都设为同一颜色，这样Canvas圆角外的区域会透明
+        self.root.config(bg=transparent_color)
+        self.root.wm_attributes("-transparentcolor", transparent_color)
         # 设置半透明
         self.root.attributes("-alpha", 0.6)
-        # 关闭白色透明色，让背景可见
-        self.root.wm_attributes("-transparentcolor", '')
-        self.root.config(bg=bg_color)
 
     def exit_hidden_mode(self):
         """退出隐藏状态"""
