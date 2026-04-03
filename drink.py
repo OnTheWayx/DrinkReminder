@@ -69,6 +69,8 @@ class HydrationReminder:
         # 隐藏状态
         self.hidden_mode = False
         self.hidden_canvas_widget = None
+        self.hidden_anim_id = None
+        self.hidden_anim_step = 0
         
         # 动画控制变量
         self.animation_id = None
@@ -825,10 +827,10 @@ class HydrationReminder:
         )
         # 绘制圆角矩形背景（Canvas背景是透明色，只有圆角矩形区域可见）
         self._draw_rounded_rect(self.hidden_canvas_widget, 0, 0, canvas_w, canvas_h, radius, fill=bg_color, outline=bg_color)
-        # 绘制三个递增大小的z
-        self.hidden_canvas_widget.create_text(16, 34, text="z", font=("Arial", 14), fill=text_color, anchor="s")
-        self.hidden_canvas_widget.create_text(35, 34, text="z", font=("Arial", 18), fill=text_color, anchor="s")
-        self.hidden_canvas_widget.create_text(54, 34, text="z", font=("Arial", 24), fill=text_color, anchor="s")
+        # 绘制三个递增大小的z，使用tag标记以便动画控制显隐
+        self.hidden_canvas_widget.create_text(16, 34, text="z", font=("Arial", 12), fill=text_color, anchor="s", tags="z1")
+        self.hidden_canvas_widget.create_text(33, 34, text="z", font=("Arial", 17), fill=text_color, anchor="s", tags="z2")
+        self.hidden_canvas_widget.create_text(52, 34, text="z", font=("Arial", 23), fill=text_color, anchor="s", tags="z3")
 
         # 绑定事件
         self.hidden_canvas_widget.bind("<Button-1>", self.start_drag)
@@ -844,9 +846,31 @@ class HydrationReminder:
         # 设置半透明
         self.root.attributes("-alpha", 0.6)
 
+        # 启动z文字动画
+        self.hidden_anim_step = 0
+        self.animate_hidden_z()
+
+    def animate_hidden_z(self):
+        """隐藏状态下z文字的逐步显示动画"""
+        if not self.hidden_mode or self.hidden_canvas_widget is None:
+            return
+        self.hidden_anim_step = (self.hidden_anim_step % 3) + 1
+        # step 1: 只显示z1, step 2: 显示z1+z2, step 3: 显示z1+z2+z3
+        transparent_color = '#f0f0f0'
+        text_color = '#4170E0'
+        self.hidden_canvas_widget.itemconfigure("z1", fill=text_color)
+        self.hidden_canvas_widget.itemconfigure("z2", fill=text_color if self.hidden_anim_step >= 2 else transparent_color)
+        self.hidden_canvas_widget.itemconfigure("z3", fill=text_color if self.hidden_anim_step >= 3 else transparent_color)
+        self.hidden_anim_id = self.root.after(400, self.animate_hidden_z)
+
     def exit_hidden_mode(self):
         """退出隐藏状态"""
         self.hidden_mode = False
+
+        # 取消z文字动画
+        if self.hidden_anim_id:
+            self.root.after_cancel(self.hidden_anim_id)
+            self.hidden_anim_id = None
 
         # 隐藏Canvas
         if self.hidden_canvas_widget is not None:
