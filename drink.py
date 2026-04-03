@@ -811,10 +811,10 @@ class HydrationReminder:
 
         # 使用特殊透明色作为Canvas背景，让圆角外的区域透明
         transparent_color = '#f0f0f0'
-        bg_color = '#3a3a3a'
-        text_color = '#d0d0d0'
-        canvas_w, canvas_h = 50, 22
-        radius = 6
+        bg_color = '#ffffff'
+        text_color = '#4170E0'
+        canvas_w, canvas_h = 100, 44
+        radius = 12
 
         self.hidden_canvas_widget = tk.Canvas(
             self.root,
@@ -826,9 +826,9 @@ class HydrationReminder:
         # 绘制圆角矩形背景（Canvas背景是透明色，只有圆角矩形区域可见）
         self._draw_rounded_rect(self.hidden_canvas_widget, 0, 0, canvas_w, canvas_h, radius, fill=bg_color, outline=bg_color)
         # 绘制三个递增大小的z
-        self.hidden_canvas_widget.create_text(10, 17, text="z", font=("Arial", 7), fill=text_color, anchor="s")
-        self.hidden_canvas_widget.create_text(25, 17, text="z", font=("Arial", 9), fill=text_color, anchor="s")
-        self.hidden_canvas_widget.create_text(40, 17, text="z", font=("Arial", 12), fill=text_color, anchor="s")
+        self.hidden_canvas_widget.create_text(20, 34, text="z", font=("Arial", 14), fill=text_color, anchor="s")
+        self.hidden_canvas_widget.create_text(50, 34, text="z", font=("Arial", 18), fill=text_color, anchor="s")
+        self.hidden_canvas_widget.create_text(80, 34, text="z", font=("Arial", 24), fill=text_color, anchor="s")
 
         # 绑定事件
         self.hidden_canvas_widget.bind("<Button-1>", self.start_drag)
