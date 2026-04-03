@@ -357,6 +357,33 @@ class HydrationReminder:
         with open(self.config_file, 'w', encoding='utf-8') as f:
             f.write(content)
     
+    def _get_virtual_screen_bounds(self):
+        """获取虚拟屏幕边界（支持多显示器）
+
+        在 Windows 上通过 ctypes 获取真实的虚拟屏幕范围，
+        可以正确处理多显示器（包括左侧/上方扩展的负坐标显示器）。
+        其他平台回退到基于主屏幕尺寸的估算。
+        """
+        try:
+            import ctypes
+            # SM_XVIRTUALSCREEN (76): 虚拟屏幕左边界
+            # SM_YVIRTUALSCREEN (77): 虚拟屏幕上边界
+            # SM_CXVIRTUALSCREEN (78): 虚拟屏幕总宽度
+            # SM_CYVIRTUALSCREEN (79): 虚拟屏幕总高度
+            user32 = ctypes.windll.user32
+            virtual_left = user32.GetSystemMetrics(76)
+            virtual_top = user32.GetSystemMetrics(77)
+            virtual_width = user32.GetSystemMetrics(78)
+            virtual_height = user32.GetSystemMetrics(79)
+            virtual_right = virtual_left + virtual_width
+            virtual_bottom = virtual_top + virtual_height
+            return virtual_left, virtual_top, virtual_right, virtual_bottom
+        except Exception:
+            # 非 Windows 平台，使用主屏幕尺寸估算
+            screen_width = self.root.winfo_screenwidth()
+            screen_height = self.root.winfo_screenheight()
+            return -screen_width, -screen_height, 2 * screen_width, 2 * screen_height
+
     def position_window(self):
         """定位窗口到上次保存的位置或默认位置"""
         screen_width = self.root.winfo_screenwidth()
@@ -369,50 +396,52 @@ class HydrationReminder:
             x = self.window_x
             y = self.window_y
 
-            # 边界检查：确保窗口至少有一部分在屏幕内
-            x = max(-window_width + 20, min(x, screen_width - 20))
-            y = max(0, min(y, screen_height - 20))
+            # 边界检查：确保窗口至少有一部分在虚拟屏幕内（支持多显示器）
+            virtual_left, virtual_top, virtual_right, virtual_bottom = self._get_virtual_screen_bounds()
+            min_visible = 20
+            x = max(virtual_left - window_width + min_visible, min(x, virtual_right - min_visible))
+            y = max(virtual_top, min(y, virtual_bottom - min_visible))
         else:
             # 否则设置为默认位置（屏幕右上角）
             x = screen_width - 150
             y = 20
 
+        # 记录实际使用的位置，用于 save_position 的变化检测
+        self.window_x = x
+        self.window_y = y
+
+        # 使用 Tkinter 的标准格式定位窗口（正确处理负坐标）
         self.root.geometry(f"+{x}+{y}")
     
     def save_position(self, event):
-        """保存窗口当前位置到配置文件"""
+        """保存窗口当前位置到配置文件（仅在拖拽后触发）"""
         # 获取当前窗口位置
         current_x = self.root.winfo_x()
         current_y = self.root.winfo_y()
 
-        # 边界检查：考虑多显示器情况，只有在合理范围内的位置才保存
-        screen_width = self.root.winfo_screenwidth()
-        screen_height = self.root.winfo_screenheight()
+        # 如果位置没有变化（只是点击，没有拖拽），不保存
+        if current_x == self.window_x and current_y == self.window_y:
+            return
+
         window_width = 100
         window_height = 100
 
         # 定义可见区域的最小像素数（窗口至少要有这么多像素可见才保存）
         min_visible = 20
 
-        # 多显示器支持：允许窗口在虚拟屏幕范围内
-        # 假设最多支持左右各一个显示器，上下各一个显示器的配置
-        # 虚拟屏幕范围：x 可以从 -screen_width 到 2*screen_width
-        #               y 可以从 -screen_height 到 2*screen_height
-        virtual_left = -screen_width
-        virtual_right = 2 * screen_width
-        virtual_top = -screen_height
-        virtual_bottom = 2 * screen_height
+        # 获取虚拟屏幕边界（支持多显示器）
+        virtual_left, virtual_top, virtual_right, virtual_bottom = self._get_virtual_screen_bounds()
 
         # 检查窗口是否至少有一部分在虚拟屏幕范围内
-        # 窗口右边缘必须在虚拟屏幕左边界右侧至少 min_visible 像素
-        # 窗口左边缘必须在虚拟屏幕右边界左侧至少 min_visible 像素
-        # 窗口下边缘必须在虚拟屏幕上边界下方至少 min_visible 像素
-        # 窗口上边缘必须在虚拟屏幕下边界上方至少 min_visible 像素
+        # 左方向：窗口右边缘必须在虚拟屏幕左边界右侧至少 min_visible 像素
+        # 右方向：窗口左边缘必须在虚拟屏幕右边界左侧至少 min_visible 像素
+        # 上方向：窗口下边缘必须在虚拟屏幕上边界下方至少 min_visible 像素
+        # 下方向：窗口上边缘必须在虚拟屏幕下边界上方至少 min_visible 像素
         is_visible = (
-            current_x + window_width > virtual_left + min_visible and  # 右边缘在左边界右侧
-            current_x < virtual_right - min_visible and                # 左边缘在右边界左侧
-            current_y + window_height > virtual_top + min_visible and  # 下边缘在上边界下方
-            current_y < virtual_bottom - min_visible                   # 上边缘在下边界上方
+            current_x + window_width > virtual_left + min_visible and   # 左边界检查
+            current_x < virtual_right - min_visible and                 # 右边界检查
+            current_y + window_height > virtual_top + min_visible and   # 上边界检查
+            current_y < virtual_bottom - min_visible                    # 下边界检查
         )
 
         if is_visible:
