@@ -779,6 +779,9 @@ class HydrationReminder:
             self.exit_hidden_mode()
         else:
             self.enter_hidden_mode()
+        # 模式切换后窗口位置/大小已变，重新校准拖拽起点，防止后续拖拽位置突变
+        self.start_x = event.x_root
+        self.start_y = event.y_root
 
     def _draw_rounded_rect(self, canvas, x1, y1, x2, y2, radius, **kwargs):
         """在Canvas上绘制圆角矩形"""
@@ -958,16 +961,21 @@ class HydrationReminder:
 
     def start_drag(self, event):
         """开始拖拽"""
-        self.start_x = event.x
-        self.start_y = event.y
+        # 使用屏幕绝对坐标，避免模式切换后控件坐标系不一致导致位置突变
+        self.start_x = event.x_root
+        self.start_y = event.y_root
         self.dragged = False  # 重置拖拽标记
 
     def drag_window(self, event):
         """拖拽窗口"""
-        x = self.root.winfo_x() + event.x - self.start_x
-        y = self.root.winfo_y() + event.y - self.start_y
+        dx = event.x_root - self.start_x
+        dy = event.y_root - self.start_y
+        x = self.root.winfo_x() + dx
+        y = self.root.winfo_y() + dy
 
         self.root.geometry(f"+{x}+{y}")
+        self.start_x = event.x_root
+        self.start_y = event.y_root
         self.dragged = True  # 标记发生了实际拖拽
     
     def show_reminder(self):
