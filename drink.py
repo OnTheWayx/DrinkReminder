@@ -107,7 +107,8 @@ class HydrationReminder:
         # 记录初始位置
         self.start_x = 0
         self.start_y = 0
-        
+        self.dragged = False  # 标记是否发生了实际拖拽
+
         # 绑定拖拽事件到GIF标签
         self.gif_label.bind("<Button-1>", self.start_drag)
         self.gif_label.bind("<B1-Motion>", self.drag_window)
@@ -422,19 +423,20 @@ class HydrationReminder:
     
     def save_position(self, event):
         """保存窗口当前位置到配置文件（仅在拖拽后触发）"""
+        # 如果没有发生实际拖拽，不需要判断保存
+        if not self.dragged:
+            return
+        self.dragged = False
+
         # 获取当前窗口位置
         current_x = self.root.winfo_x()
         current_y = self.root.winfo_y()
-
-        # 如果位置没有变化（只是点击，没有拖拽），不保存
-        if current_x == self.window_x and current_y == self.window_y:
-            return
 
         window_width = 100
         window_height = 100
 
         # 定义可见区域的最小像素数（窗口至少要有这么多像素可见才保存）
-        min_visible = 20
+        min_visible = 100
 
         # 获取虚拟屏幕边界（支持多显示器）
         virtual_left, virtual_top, virtual_right, virtual_bottom = self._get_virtual_screen_bounds()
@@ -795,7 +797,34 @@ class HydrationReminder:
 
     def enter_hidden_mode(self):
         """进入隐藏状态"""
+        # 隐藏状态 Canvas 的固定尺寸
+        canvas_w, canvas_h = 35, 22
+
+        # 先预算隐藏状态的目标位置，判断是否在屏幕内
+        normal_x = self.root.winfo_x()
+        normal_y = self.root.winfo_y()
+        normal_w = self.root.winfo_width()
+        normal_h = self.root.winfo_height()
+        center_x = normal_x + normal_w // 2
+        center_y = normal_y + normal_h // 2
+        hidden_x = center_x - canvas_w // 2
+        hidden_y = center_y - canvas_h // 2
+
+        # 检查隐藏状态是否完全在屏幕外
+        virtual_left, virtual_top, virtual_right, virtual_bottom = self._get_virtual_screen_bounds()
+        if (hidden_x + canvas_w <= virtual_left or
+                hidden_x >= virtual_right or
+                hidden_y + canvas_h <= virtual_top or
+                hidden_y >= virtual_bottom):
+            # 隐藏状态会完全处于屏幕外，不进入隐藏状态
+            return
+
         self.hidden_mode = True
+        self.hidden_dragged = False  # 标记隐藏状态期间是否被拖拽过
+
+        # 记录正常状态的窗口位置，用于退出隐藏时恢复
+        self.normal_window_x = normal_x
+        self.normal_window_y = normal_y
 
         # 取消GIF动画
         if self.animation_id:
@@ -835,7 +864,7 @@ class HydrationReminder:
         # 绑定事件
         self.hidden_canvas_widget.bind("<Button-1>", self.start_drag)
         self.hidden_canvas_widget.bind("<B1-Motion>", self.drag_window)
-        self.hidden_canvas_widget.bind("<ButtonRelease-1>", self.save_position)
+        self.hidden_canvas_widget.bind("<ButtonRelease-1>", self._hidden_save_position)
         self.hidden_canvas_widget.bind("<Double-Button-1>", self.on_double_click)
 
         self.hidden_canvas_widget.pack()
@@ -845,6 +874,9 @@ class HydrationReminder:
         self.root.wm_attributes("-transparentcolor", transparent_color)
         # 设置半透明
         self.root.attributes("-alpha", 0.6)
+
+        # 以正常状态中心点定位隐藏状态（使用预算好的位置）
+        self.root.geometry(f"+{hidden_x}+{hidden_y}")
 
         # 启动z文字动画
         self.hidden_anim_step = 0
@@ -861,8 +893,23 @@ class HydrationReminder:
         self.hidden_canvas_widget.itemconfigure("z3", state='normal' if self.hidden_anim_step >= 3 else 'hidden')
         self.hidden_anim_id = self.root.after(1200, self.animate_hidden_z)
 
+    def _hidden_save_position(self, event):
+        """隐藏状态下的鼠标释放处理"""
+        if self.dragged:
+            self.hidden_dragged = True  # 记录隐藏状态期间发生了拖拽
+            # 隐藏状态下拖拽后也保存位置
+            self.save_position(event)
+
     def exit_hidden_mode(self):
         """退出隐藏状态"""
+        # 记录隐藏状态的窗口中心点（用于定位正常状态）
+        hidden_x = self.root.winfo_x()
+        hidden_y = self.root.winfo_y()
+        hidden_w = self.root.winfo_width()
+        hidden_h = self.root.winfo_height()
+        hidden_center_x = hidden_x + hidden_w // 2
+        hidden_center_y = hidden_y + hidden_h // 2
+
         self.hidden_mode = False
 
         # 取消z文字动画
@@ -886,6 +933,25 @@ class HydrationReminder:
         # 恢复透明度
         self.root.attributes("-alpha", 0.8)
 
+        # 定位正常状态窗口
+        if hasattr(self, 'hidden_dragged') and self.hidden_dragged:
+            # 隐藏状态期间被拖拽过，以隐藏状态的中心点定位正常状态
+            self.root.update_idletasks()
+            normal_w = self.root.winfo_width()
+            normal_h = self.root.winfo_height()
+            new_x = hidden_center_x - normal_w // 2
+            new_y = hidden_center_y - normal_h // 2
+            self.root.geometry(f"+{new_x}+{new_y}")
+            # 更新保存的位置
+            self.window_x = new_x
+            self.window_y = new_y
+            self.save_config()
+        else:
+            # 隐藏状态期间没有被拖拽，恢复到进入隐藏前的正常位置
+            restore_x = getattr(self, 'normal_window_x', self.window_x)
+            restore_y = getattr(self, 'normal_window_y', self.window_y)
+            self.root.geometry(f"+{restore_x}+{restore_y}")
+
         # 重新启动GIF动画
         self.current_frame = 0
         self.animate_gif()
@@ -894,13 +960,15 @@ class HydrationReminder:
         """开始拖拽"""
         self.start_x = event.x
         self.start_y = event.y
-    
+        self.dragged = False  # 重置拖拽标记
+
     def drag_window(self, event):
         """拖拽窗口"""
         x = self.root.winfo_x() + event.x - self.start_x
         y = self.root.winfo_y() + event.y - self.start_y
 
         self.root.geometry(f"+{x}+{y}")
+        self.dragged = True  # 标记发生了实际拖拽
     
     def show_reminder(self):
         """显示提醒"""
