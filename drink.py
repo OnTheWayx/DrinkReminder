@@ -1,6 +1,5 @@
 import tkinter as tk
 from tkinter import messagebox, filedialog
-import configparser
 import os
 import time
 import threading
@@ -8,6 +7,9 @@ from PIL import Image, ImageTk, ImageSequence
 import sys
 from datetime import datetime
 import requests
+import pystray
+from config_manager import ConfigManager
+from settings_dialog import SettingsDialog
 
 class HydrationReminder:
     def __init__(self):
@@ -22,7 +24,8 @@ class HydrationReminder:
             self.app_dir = os.path.dirname(os.path.abspath(__file__))
         
         # 初始化配置
-        self.config_file = os.path.join(self.app_dir, "hydration_config.ini")
+        self.config_manager = ConfigManager()
+        self.tray_icon = None
         self.load_or_create_config()
         
         # 检查GIF文件是否存在
@@ -123,247 +126,196 @@ class HydrationReminder:
         
         # 设置开机自启动
         self.setup_auto_start()
+
+        # 创建系统托盘图标
+        self.create_tray_icon()
         
     def load_or_create_config(self):
-        """加载或创建配置文件"""
-        self.config = configparser.ConfigParser()
-        
-        if not os.path.exists(self.config_file):
-            # 创建默认配置
-            self.config['Settings'] = {
-                'reminder_interval': '30',  # 默认30分钟
-                'reminder_count': '10',     # 默认10次
-                'reminder_text': '该喝水了！记得保持水分充足哦~',
-                'gif_path': 'pika.gif',  # 默认使用pika.gif
-                'reminder_gif_path': 'pika.gif',  # 默认使用pika.gif作为提醒时的GIF
-                'window_x': '-1',           # 默认x坐标
-                'window_y': '-1'            # 默认y坐标
-            }
-            self.save_config()
-        else:
-            # 读取现有配置文件，保留所有内容
-            self.config.read(self.config_file, encoding='utf-8')
-            
-            # 确保必要的配置项存在，如果不存在则添加默认值
-            if not self.config.has_section('Settings'):
-                self.config.add_section('Settings')
-                
-            if not self.config.has_option('Settings', 'reminder_interval'):
-                self.config.set('Settings', 'reminder_interval', '30')
-            if not self.config.has_option('Settings', 'reminder_count'):
-                self.config.set('Settings', 'reminder_count', '10')
-            if not self.config.has_option('Settings', 'reminder_text'):
-                self.config.set('Settings', 'reminder_text', '该喝水了！记得保持水分充足哦~')
-            if not self.config.has_option('Settings', 'gif_path'):
-                self.config.set('Settings', 'gif_path', os.path.join(self.app_dir, 'drink.gif'))
-            if not self.config.has_option('Settings', 'window_x'):
-                self.config.set('Settings', 'window_x', '-1')
-            if not self.config.has_option('Settings', 'window_y'):
-                self.config.set('Settings', 'window_y', '-1')
-            if not self.config.has_option('Settings', 'reminder_gif_path'):
-                self.config.set('Settings', 'reminder_gif_path', 'pika.gif')
-            if not self.config.has_option('Settings', 'reminder_text_color'):
-                self.config.set('Settings', 'reminder_text_color', '(255, 255, 255, 1.0)')
-            if not self.config.has_option('Settings', 'to_time'):
-                self.config.set('Settings', 'to_time', '23:59')
-            if not self.config.has_option('Settings', 'weather'):
-                self.config.set('Settings', 'weather', '0')
-            if not self.config.has_option('Settings', 'drink_font_size'):
-                self.config.set('Settings', 'drink_font_size', '12')
-            if not self.config.has_option('Settings', 'weather_font_size'):
-                self.config.set('Settings', 'weather_font_size', '11')
-            if not self.config.has_option('Settings', 'weather_key'):
-                self.config.set('Settings', 'weather_key', '')
-            if not self.config.has_option('Settings', 'auto_start'):
-                self.config.set('Settings', 'auto_start', '0')
-            if not self.config.has_option('Settings', 'reminder_time'):
-                self.config.set('Settings', 'reminder_time', '8')
-        
-        # 读取配置值
-        self.interval = int(self.config.get('Settings', 'reminder_interval', fallback='30'))
-        self.count = int(self.config.get('Settings', 'reminder_count', fallback='10'))
-        
-        # 读取并验证提醒时长
+        """加载或创建配置"""
+        cfg = self.config_manager.load()
+
+        self.interval = int(cfg.get('reminder_interval', 30))
+        self.count = int(cfg.get('reminder_count', 30))
+
+        # 验证提醒时长
         try:
-            reminder_time = int(self.config.get('Settings', 'reminder_time', fallback='8'))
-            # 确保在有效范围内 3-120 秒
-            reminder_time = max(3, min(120, reminder_time))
-            # 转换为毫秒
-            reminder_time_ms = reminder_time * 1000
-            # 确保不大于提醒间隔-1（转换为毫秒）
-            max_reminder_time = (self.interval * 60 - 1) * 1000
-            self.reminder_time = min(reminder_time_ms, max_reminder_time)
+            rt = int(cfg.get('reminder_time', 60))
+            rt = max(3, min(120, rt))
+            rt_ms = rt * 1000
+            max_rt = (self.interval * 60 - 1) * 1000
+            self.reminder_time = min(rt_ms, max_rt)
         except ValueError:
-            self.reminder_time = 8000
-        self.reminder_text = self.config.get('Settings', 'reminder_text', fallback='该喝水了！记得保持水分充足哦~')
-        gif_path = self.config.get('Settings', 'gif_path', fallback='pika.gif')
-        # 检查路径是否为绝对路径，如果不是则使用相对路径
-        if not os.path.isabs(gif_path):
-            self.gif_path = os.path.join(self.app_dir, gif_path)
-        else:
-            self.gif_path = gif_path
-        
-        # 读取提醒时的GIF路径
-        reminder_gif_path = self.config.get('Settings', 'reminder_gif_path', fallback='pika.gif')
-        if not os.path.isabs(reminder_gif_path):
-            self.reminder_gif_path = os.path.join(self.app_dir, reminder_gif_path)
-        else:
-            self.reminder_gif_path = reminder_gif_path
-        
-        # 读取提示语颜色
-        reminder_text_color = self.config.get('Settings', 'reminder_text_color', fallback='(255, 255, 255, 1.0)')
-        # 解析RGBA值
+            self.reminder_time = 60000
+
+        self.reminder_text = cfg.get('reminder_text', '该喝水了哦宝宝！记得保持水分充足哦~')
+
+        gif_path = cfg.get('gif_path', 'normal.gif')
+        self.gif_path = os.path.join(self.app_dir, gif_path) if not os.path.isabs(gif_path) else gif_path
+
+        reminder_gif_path = cfg.get('reminder_gif_path', 'touchhead.gif')
+        self.reminder_gif_path = os.path.join(self.app_dir, reminder_gif_path) if not os.path.isabs(reminder_gif_path) else reminder_gif_path
+
+        # 解析颜色
+        color_str = cfg.get('reminder_text_color', '(65, 112, 224, 1.0)')
         try:
-            # 移除括号并分割值
-            color_values = reminder_text_color.strip('()').split(',')
-            r, g, b, a = [float(val.strip()) for val in color_values]
-            # 确保值在有效范围内
-            r = max(0, min(255, int(r)))
-            g = max(0, min(255, int(g)))
-            b = max(0, min(255, int(b)))
-            a = max(0, min(1.0, a))
-            # 转换为十六进制颜色代码（Tkinter不直接支持RGBA）
+            vals = color_str.strip('()').split(',')
+            r, g, b, a = [float(v.strip()) for v in vals]
+            r, g, b = max(0, min(255, int(r))), max(0, min(255, int(g))), max(0, min(255, int(b)))
             self.reminder_text_color = f'#{r:02x}{g:02x}{b:02x}'
-        except Exception as e:
-            # 如果解析失败，使用默认白色
-            print(f"提示语颜色解析失败，使用默认白色: {e}")
-            self.reminder_text_color = 'white'
-        
-        # 读取提醒截止时间
-        self.to_time = self.config.get('Settings', 'to_time', fallback='23:59')
-        
-        # 读取天气配置
-        self.weather = self.config.get('Settings', 'weather', fallback='0')
-        
-        # 读取字体大小配置
-        self.drink_font_size = int(self.config.get('Settings', 'drink_font_size', fallback='12'))
-        self.weather_font_size = int(self.config.get('Settings', 'weather_font_size', fallback='11'))
-        
-        # 读取天气 API key
-        self.weather_key = self.config.get('Settings', 'weather_key', fallback='')
-        
-        # 读取开机自启动配置
-        self.auto_start = self.config.get('Settings', 'auto_start', fallback='0')
-        
-        self.window_x = int(self.config.get('Settings', 'window_x', fallback='-1'))
-        self.window_y = int(self.config.get('Settings', 'window_y', fallback='-1'))
+        except:
+            self.reminder_text_color = '#4170e0'
+
+        self.to_time = cfg.get('to_time', '23:00')
+        self.weather = str(cfg.get('weather', '110000'))
+        self.drink_font_size = int(cfg.get('drink_font_size', 12))
+        self.weather_font_size = int(cfg.get('weather_font_size', 11))
+        self.weather_key = cfg.get('weather_key', '')
+        self.auto_start = str(cfg.get('auto_start', 1))
+        self.window_x = int(cfg.get('window_x', 720))
+        self.window_y = int(cfg.get('window_y', 360))
         
     def save_config(self):
-        """保存配置到文件，保留原有内容包括注释和换行"""
-        # 读取原始文件内容
-        if os.path.exists(self.config_file):
-            with open(self.config_file, 'r', encoding='utf-8') as f:
-                lines = f.readlines()
-        else:
-            lines = []
-        
-        # 检查原始文件中哪些配置项已经存在
-        existing_keys = set()
-        in_settings_section = False
-        
-        for line in lines:
-            if line.strip().lower() == '[settings]':
-                in_settings_section = True
-            elif line.strip().startswith('[') and line.strip().endswith(']'):
-                in_settings_section = False
-            elif in_settings_section and line.strip() and '=' in line and not line.strip().startswith('#'):
-                key = line.strip().split('=')[0].strip()
-                existing_keys.add(key)
-        
-        # 更新需要修改的键值对
-        updated_lines = []
-        in_settings_section = False
-        # 用于跟踪已经处理过的配置项
-        processed_keys = set()
-        
-        for line in lines:
-            # 检查是否进入[Settings]节
-            if line.strip().lower() == '[settings]':
-                in_settings_section = True
-                updated_lines.append(line)
-            elif line.strip().startswith('[') and line.strip().endswith(']'):
-                # 进入其他节
-                in_settings_section = False
-                updated_lines.append(line)
-            elif in_settings_section and line.strip() and '=' in line and not line.strip().startswith('#'):
-                # 提取键名
-                key = line.strip().split('=')[0].strip()
-                
-                # 如果是配置项，并且还没有处理过
-                if key in ['window_x', 'window_y', 'reminder_gif_path', 'reminder_text_color', 'to_time', 'weather', 'drink_font_size', 'weather_font_size', 'weather_key', 'auto_start']:
-                    if key not in processed_keys:
-                        # 更新配置项
-                        if key == 'window_x':
-                            updated_lines.append(f'window_x = {self.window_x}\n')
-                        elif key == 'window_y':
-                            updated_lines.append(f'window_y = {self.window_y}\n')
-                        elif key == 'reminder_gif_path':
-                            updated_lines.append(f'reminder_gif_path = {os.path.basename(self.reminder_gif_path)}\n')
-                        elif key == 'reminder_text_color':
-                            updated_lines.append(f'reminder_text_color = {self.config.get("Settings", "reminder_text_color", fallback="(255, 255, 255, 1.0)")}\n')
-                        elif key == 'to_time':
-                            updated_lines.append(f'to_time = {self.to_time}\n')
-                        elif key == 'weather':
-                            updated_lines.append(f'weather = {self.weather}\n')
-                        elif key == 'drink_font_size':
-                            updated_lines.append(f'drink_font_size = {self.drink_font_size}\n')
-                        elif key == 'weather_font_size':
-                            updated_lines.append(f'weather_font_size = {self.weather_font_size}\n')
-                        elif key == 'weather_key':
-                            updated_lines.append(f'weather_key = {self.weather_key}\n')
-                        elif key == 'auto_start':
-                            updated_lines.append(f'auto_start = {self.auto_start}\n')
-                        processed_keys.add(key)
-                else:
-                    # 保留其他行不变
-                    updated_lines.append(line)
-            else:
-                # 保留其他行不变
-                updated_lines.append(line)
-        
-        # 如果没有找到window_x或window_y，在[Settings]节末尾添加
-        content = ''.join(updated_lines)
-        
-        # 要添加的配置项
-        config_items_to_add = []
-        if 'window_x' not in existing_keys:
-            config_items_to_add.append(f'window_x = {self.window_x}')
-        if 'window_y' not in existing_keys:
-            config_items_to_add.append(f'window_y = {self.window_y}')
-        if 'reminder_gif_path' not in existing_keys:
-            config_items_to_add.append(f'reminder_gif_path = {os.path.basename(self.reminder_gif_path)}')
-        if 'reminder_text_color' not in existing_keys:
-            config_items_to_add.append(f'reminder_text_color = {self.config.get("Settings", "reminder_text_color", fallback="(255, 255, 255, 1.0)")}')
-        if 'to_time' not in existing_keys:
-            config_items_to_add.append(f'to_time = {self.to_time}')
-        if 'weather' not in existing_keys:
-            config_items_to_add.append(f'weather = {self.weather}')
-        if 'drink_font_size' not in existing_keys:
-            config_items_to_add.append(f'drink_font_size = {self.drink_font_size}')
-        if 'weather_font_size' not in existing_keys:
-            config_items_to_add.append(f'weather_font_size = {self.weather_font_size}')
-        if 'weather_key' not in existing_keys:
-            config_items_to_add.append(f'weather_key = {self.weather_key}')
-        if 'auto_start' not in existing_keys:
-            config_items_to_add.append(f'auto_start = {self.auto_start}')
-        
-        # 如果有配置项需要添加
-        if config_items_to_add:
-            # 查找[Settings]节的位置
-            settings_pos = content.find('[Settings]')
-            if settings_pos != -1:
-                # 找到节结束位置
-                next_section_pos = content.find('[', settings_pos + 1)
-                if next_section_pos == -1:
-                    # 没有下一个节，添加到末尾
-                    content += '\n' + '\n'.join(config_items_to_add) + '\n'
-                else:
-                    # 在下一节前插入
-                    content = content[:next_section_pos] + '\n' + '\n'.join(config_items_to_add) + '\n' + content[next_section_pos:]
-        
-        # 写入更新后的内容
-        with open(self.config_file, 'w', encoding='utf-8') as f:
-            f.write(content)
+        """保存配置到加密文件"""
+        # 获取gif相对路径
+        gif_rel = os.path.basename(self.gif_path) if self.gif_path.startswith(self.app_dir) else self.gif_path
+        rgif_rel = os.path.basename(self.reminder_gif_path) if self.reminder_gif_path.startswith(self.app_dir) else self.reminder_gif_path
+
+        # 将hex颜色转回RGBA字符串
+        try:
+            c = self.reminder_text_color.lstrip('#')
+            r, g, b = int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16)
+            color_str = f'({r}, {g}, {b}, 1.0)'
+        except:
+            color_str = '(65, 112, 224, 1.0)'
+
+        cfg = {
+            'gif_path': gif_rel,
+            'reminder_gif_path': rgif_rel,
+            'reminder_interval': self.interval,
+            'reminder_time': self.reminder_time // 1000,
+            'reminder_count': self.count,
+            'reminder_text': self.reminder_text,
+            'reminder_text_color': color_str,
+            'to_time': self.to_time,
+            'weather': self.weather,
+            'weather_key': self.weather_key,
+            'drink_font_size': self.drink_font_size,
+            'weather_font_size': self.weather_font_size,
+            'auto_start': int(self.auto_start),
+            'window_x': self.window_x,
+            'window_y': self.window_y
+        }
+        self.config_manager.save(cfg)
+
+    def create_tray_icon(self):
+        """创建系统托盘图标"""
+        # 创建一个简单的图标（蓝色水滴形状）
+        icon_image = Image.new('RGBA', (64, 64), (0, 0, 0, 0))
+        from PIL import ImageDraw
+        draw = ImageDraw.Draw(icon_image)
+        # 画一个蓝色圆形作为图标
+        draw.ellipse([8, 8, 56, 56], fill=(65, 112, 224, 255))
+        draw.ellipse([20, 20, 44, 44], fill=(120, 170, 255, 255))
+
+        menu = pystray.Menu(
+            pystray.MenuItem('设置', self._on_tray_settings),
+            pystray.Menu.SEPARATOR,
+            pystray.MenuItem('退出', self._on_tray_quit)
+        )
+
+        self.tray_icon = pystray.Icon("DrinkReminder", icon_image, "喝水提醒", menu)
+        tray_thread = threading.Thread(target=self.tray_icon.run, daemon=True)
+        tray_thread.start()
+
+    def _on_tray_settings(self, icon=None, item=None):
+        """系统托盘 - 设置"""
+        self.root.after(0, self._show_settings_dialog)
+
+    def _show_settings_dialog(self):
+        """显示设置对话框"""
+        # 获取当前配置
+        try:
+            c = self.reminder_text_color.lstrip('#')
+            r, g, b = int(c[0:2], 16), int(c[2:4], 16), int(c[4:6], 16)
+            color_str = f'({r}, {g}, {b}, 1.0)'
+        except:
+            color_str = '(65, 112, 224, 1.0)'
+
+        current = {
+            'gif_path': os.path.basename(self.gif_path) if self.gif_path.startswith(self.app_dir) else self.gif_path,
+            'reminder_gif_path': os.path.basename(self.reminder_gif_path) if self.reminder_gif_path.startswith(self.app_dir) else self.reminder_gif_path,
+            'reminder_interval': self.interval,
+            'reminder_time': self.reminder_time // 1000,
+            'reminder_count': self.count,
+            'reminder_text': self.reminder_text,
+            'reminder_text_color': color_str,
+            'to_time': self.to_time,
+            'weather': self.weather,
+            'weather_key': self.weather_key,
+            'drink_font_size': self.drink_font_size,
+            'weather_font_size': self.weather_font_size,
+            'auto_start': int(self.auto_start),
+        }
+
+        dialog = SettingsDialog(self.root, current, self.app_dir)
+        result = dialog.show()
+
+        if result:
+            # 应用新配置
+            self.interval = result['reminder_interval']
+            self.count = result['reminder_count']
+            self.reminder_text = result['reminder_text']
+            self.to_time = result['to_time']
+            self.weather = str(result['weather'])
+            self.weather_key = result['weather_key']
+            self.drink_font_size = result['drink_font_size']
+            self.weather_font_size = result['weather_font_size']
+            self.auto_start = str(result['auto_start'])
+
+            # GIF路径
+            gif_path = result['gif_path']
+            self.gif_path = os.path.join(self.app_dir, gif_path) if not os.path.isabs(gif_path) else gif_path
+            rgif_path = result['reminder_gif_path']
+            self.reminder_gif_path = os.path.join(self.app_dir, rgif_path) if not os.path.isabs(rgif_path) else rgif_path
+
+            # 颜色
+            try:
+                vals = result['reminder_text_color'].strip('()').split(',')
+                r, g, b, a = [float(v.strip()) for v in vals]
+                r, g, b = max(0, min(255, int(r))), max(0, min(255, int(g))), max(0, min(255, int(b)))
+                self.reminder_text_color = f'#{r:02x}{g:02x}{b:02x}'
+            except:
+                pass
+
+            # 提醒时长
+            rt = max(3, min(120, result['reminder_time']))
+            rt_ms = rt * 1000
+            max_rt = (self.interval * 60 - 1) * 1000
+            self.reminder_time = min(rt_ms, max_rt)
+
+            self.save_config()
+            self.setup_auto_start()
+
+            # 重新加载GIF
+            self.load_gif()
+            self.load_reminder_gif()
+
+            if self.weather != '0':
+                self.update_weather_info()
+
+            messagebox.showinfo("成功", "设置已保存！部分设置需要重启程序后生效。")
+
+    def _on_tray_quit(self, icon=None, item=None):
+        """系统托盘 - 退出"""
+        if self.tray_icon:
+            self.tray_icon.stop()
+        self.root.after(0, self._do_quit)
+
+    def _do_quit(self):
+        """执行退出"""
+        self.save_config()
+        self.root.quit()
+        self.root.destroy()
     
     def _get_virtual_screen_bounds(self):
         """获取虚拟屏幕边界（支持多显示器）
@@ -1112,7 +1064,11 @@ class HydrationReminder:
 
     def run(self):
         """运行主循环"""
-        self.root.mainloop()
+        try:
+            self.root.mainloop()
+        finally:
+            if self.tray_icon:
+                self.tray_icon.stop()
 
 
 def main():
