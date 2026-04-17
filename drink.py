@@ -296,6 +296,11 @@ class HydrationReminder:
             self.save_config()
             self.setup_auto_start()
 
+            # 取消现有动画定时器，防止重复叠加导致动画加速
+            if self.animation_id:
+                self.root.after_cancel(self.animation_id)
+                self.animation_id = None
+
             # 重新加载GIF
             self.load_gif()
             self.load_reminder_gif()
@@ -379,6 +384,10 @@ class HydrationReminder:
         if not self.dragged:
             return
         self.dragged = False
+
+        # 如果在隐藏模式下拖拽（可能由切换前的鼠标按下事件触发），标记hidden_dragged
+        if self.hidden_mode:
+            self.hidden_dragged = True
 
         # 获取当前窗口位置
         current_x = self.root.winfo_x()
