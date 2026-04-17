@@ -11,6 +11,15 @@ import pystray
 from config_manager import ConfigManager
 from settings_dialog import SettingsDialog
 
+def resource_path(relative_path):
+    """获取内置资源的绝对路径（兼容 PyInstaller 打包和源码运行）"""
+    if getattr(sys, 'frozen', False):
+        # PyInstaller 打包后，内置资源解压到 sys._MEIPASS 临时目录
+        base_path = sys._MEIPASS
+    else:
+        base_path = os.path.dirname(os.path.abspath(__file__))
+    return os.path.join(base_path, relative_path)
+
 class HydrationReminder:
     def __init__(self):
         # 获取程序所在目录
@@ -150,10 +159,10 @@ class HydrationReminder:
         self.reminder_text = cfg.get('reminder_text', '该喝水了哦宝宝！记得保持水分充足哦~')
 
         gif_path = cfg.get('gif_path', 'normal.gif')
-        self.gif_path = os.path.join(self.app_dir, gif_path) if not os.path.isabs(gif_path) else gif_path
+        self.gif_path = self._resolve_gif_path(gif_path)
 
         reminder_gif_path = cfg.get('reminder_gif_path', 'touchhead.gif')
-        self.reminder_gif_path = os.path.join(self.app_dir, reminder_gif_path) if not os.path.isabs(reminder_gif_path) else reminder_gif_path
+        self.reminder_gif_path = self._resolve_gif_path(reminder_gif_path)
 
         # 解析颜色
         color_str = cfg.get('reminder_text_color', '(65, 112, 224, 1.0)')
@@ -173,7 +182,20 @@ class HydrationReminder:
         self.auto_start = str(cfg.get('auto_start', 1))
         self.window_x = int(cfg.get('window_x', 720))
         self.window_y = int(cfg.get('window_y', 360))
-        
+
+    def _resolve_gif_path(self, gif_path):
+        """解析GIF路径：优先使用外部文件，找不到则回退到内置资源"""
+        if os.path.isabs(gif_path):
+            if os.path.exists(gif_path):
+                return gif_path
+            # 绝对路径不存在，尝试内置资源
+            return resource_path(os.path.basename(gif_path))
+        # 相对路径：先查 app_dir（用户自定义），再查内置资源
+        external = os.path.join(self.app_dir, gif_path)
+        if os.path.exists(external):
+            return external
+        return resource_path(gif_path)
+
     def save_config(self):
         """保存配置到加密文件"""
         # 获取gif相对路径
@@ -274,9 +296,9 @@ class HydrationReminder:
 
             # GIF路径
             gif_path = result['gif_path']
-            self.gif_path = os.path.join(self.app_dir, gif_path) if not os.path.isabs(gif_path) else gif_path
+            self.gif_path = self._resolve_gif_path(gif_path)
             rgif_path = result['reminder_gif_path']
-            self.reminder_gif_path = os.path.join(self.app_dir, rgif_path) if not os.path.isabs(rgif_path) else rgif_path
+            self.reminder_gif_path = self._resolve_gif_path(rgif_path)
 
             # 颜色
             try:
