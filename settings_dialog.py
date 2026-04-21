@@ -12,9 +12,10 @@ _SPIN_W = 26
 class SettingsDialog:
     """设置对话框 - 通过GUI配置所有参数"""
 
-    def __init__(self, parent, current_config, app_dir):
+    def __init__(self, parent, current_config, app_dir, on_readme=None):
         self.app_dir = app_dir
         self.result = None
+        self.on_readme = on_readme
         cfg = current_config
 
         self.dialog = tk.Toplevel(parent)
@@ -108,6 +109,9 @@ class SettingsDialog:
 
         self.autostart_var = tk.IntVar(value=cfg.get('auto_start', 1))
         tk.Checkbutton(bottom, text="开机自启动", variable=self.autostart_var, bg='#f0f0f0').pack(side=tk.LEFT)
+
+        if self.on_readme:
+            tk.Button(bottom, text="使用说明", width=8, command=self.on_readme).pack(side=tk.LEFT, padx=(6, 0))
 
         tk.Button(bottom, text="取消", width=8, command=self._cancel).pack(side=tk.RIGHT, padx=(6, 0))
         tk.Button(bottom, text="保存", width=8, command=self._save).pack(side=tk.RIGHT)

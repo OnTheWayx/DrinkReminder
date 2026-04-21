@@ -3,6 +3,7 @@ from tkinter import messagebox, filedialog
 import os
 import time
 import threading
+import webbrowser
 from PIL import Image, ImageTk, ImageSequence
 import sys
 from datetime import datetime
@@ -241,6 +242,7 @@ class HydrationReminder:
 
         menu = pystray.Menu(
             pystray.MenuItem('设置', self._on_tray_settings),
+            pystray.MenuItem('使用说明', self._on_tray_readme),
             pystray.Menu.SEPARATOR,
             pystray.MenuItem('退出', self._on_tray_quit)
         )
@@ -252,6 +254,18 @@ class HydrationReminder:
     def _on_tray_settings(self, icon=None, item=None):
         """系统托盘 - 设置"""
         self.root.after(0, self._show_settings_dialog)
+
+    def _on_tray_readme(self, icon=None, item=None):
+        """系统托盘 - 使用说明"""
+        self.root.after(0, self._open_readme)
+
+    def _open_readme(self):
+        """打开README.html使用说明"""
+        readme_path = resource_path('README.html')
+        if os.path.exists(readme_path):
+            webbrowser.open(f'file:///{os.path.normpath(readme_path)}'.replace('\\', '/'))
+        else:
+            messagebox.showerror("错误", "使用说明文件不存在！")
 
     def _show_settings_dialog(self):
         """显示设置对话框"""
@@ -279,7 +293,7 @@ class HydrationReminder:
             'auto_start': int(self.auto_start),
         }
 
-        dialog = SettingsDialog(self.root, current, self.app_dir)
+        dialog = SettingsDialog(self.root, current, self.app_dir, on_readme=self._open_readme)
         result = dialog.show()
 
         if result:
