@@ -29,7 +29,7 @@ class ConfigManager:
         'subtitle_enabled': 0,
         'subtitle_text': '该喝水啦~',
         'subtitle_position': 'right',
-        'subtitle_font_size': 48
+        'subtitle_font_size': 64
     }
 
     def __init__(self):
