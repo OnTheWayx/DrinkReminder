@@ -187,7 +187,7 @@ class HydrationReminder:
         self.subtitle_enabled = int(cfg.get('subtitle_enabled', 0))
         self.subtitle_text = cfg.get('subtitle_text', '该喝水啦~')
         self.subtitle_position = cfg.get('subtitle_position', 'right')
-        self.subtitle_font_size = int(cfg.get('subtitle_font_size', 64))
+        self.subtitle_font_size = int(cfg.get('subtitle_font_size', 128))
 
     def _resolve_gif_path(self, gif_path):
         """解析GIF路径：优先使用外部文件，找不到则回退到内置资源"""
