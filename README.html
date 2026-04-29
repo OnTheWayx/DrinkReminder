@@ -1,607 +1,210 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>README.md</title>
+<title>喝水提醒小程序 - 使用说明</title>
 <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-
 <style>
-/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
-/*---------------------------------------------------------------------------------------------
- *  Copyright (c) Microsoft Corporation. All rights reserved.
- *  Licensed under the MIT License. See License.txt in the project root for license information.
- *--------------------------------------------------------------------------------------------*/
-
 body {
-	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
-	font-size: var(--vscode-markdown-font-size, 14px);
-	padding: 0 26px;
-	line-height: var(--vscode-markdown-line-height, 22px);
-	word-wrap: break-word;
-}
-
-#code-csp-warning {
-	position: fixed;
-	top: 0;
-	right: 0;
-	color: white;
-	margin: 16px;
-	text-align: center;
-	font-size: 12px;
-	font-family: sans-serif;
-	background-color:#444444;
-	cursor: pointer;
-	padding: 6px;
-	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
-}
-
-#code-csp-warning:hover {
-	text-decoration: none;
-	background-color:#007acc;
-	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
-}
-
-body.scrollBeyondLastLine {
-	margin-bottom: calc(100vh - 22px);
-}
-
-body.showEditorSelection .code-line {
-	position: relative;
-}
-
-body.showEditorSelection .code-active-line:before,
-body.showEditorSelection .code-line:hover:before {
-	content: "";
-	display: block;
-	position: absolute;
-	top: 0;
-	left: -12px;
-	height: 100%;
-}
-
-body.showEditorSelection li.code-active-line:before,
-body.showEditorSelection li.code-line:hover:before {
-	left: -30px;
-}
-
-.vscode-light.showEditorSelection .code-active-line:before {
-	border-left: 3px solid rgba(0, 0, 0, 0.15);
-}
-
-.vscode-light.showEditorSelection .code-line:hover:before {
-	border-left: 3px solid rgba(0, 0, 0, 0.40);
-}
-
-.vscode-light.showEditorSelection .code-line .code-line:hover:before {
-	border-left: none;
-}
-
-.vscode-dark.showEditorSelection .code-active-line:before {
-	border-left: 3px solid rgba(255, 255, 255, 0.4);
-}
-
-.vscode-dark.showEditorSelection .code-line:hover:before {
-	border-left: 3px solid rgba(255, 255, 255, 0.60);
-}
-
-.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
-	border-left: none;
-}
-
-.vscode-high-contrast.showEditorSelection .code-active-line:before {
-	border-left: 3px solid rgba(255, 160, 0, 0.7);
-}
-
-.vscode-high-contrast.showEditorSelection .code-line:hover:before {
-	border-left: 3px solid rgba(255, 160, 0, 1);
-}
-
-.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
-	border-left: none;
-}
-
-img {
-	max-width: 100%;
-	max-height: 100%;
-}
-
-a {
-	text-decoration: none;
-}
-
-a:hover {
-	text-decoration: underline;
-}
-
-a:focus,
-input:focus,
-select:focus,
-textarea:focus {
-	outline: 1px solid -webkit-focus-ring-color;
-	outline-offset: -1px;
-}
-
-hr {
-	border: 0;
-	height: 2px;
-	border-bottom: 2px solid;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Microsoft YaHei", sans-serif;
+    font-size: 15px;
+    padding: 20px 40px;
+    line-height: 1.8;
+    max-width: 900px;
+    margin: 0 auto;
+    color: #333;
 }
 
 h1 {
-	padding-bottom: 0.3em;
-	line-height: 1.2;
-	border-bottom-width: 1px;
-	border-bottom-style: solid;
+    border-bottom: 2px solid #4a90d9;
+    padding-bottom: 10px;
 }
 
-h1, h2, h3 {
-	font-weight: normal;
+h2 {
+    margin-top: 2em;
+    color: #2c3e50;
+    border-bottom: 1px solid #eee;
+    padding-bottom: 6px;
+}
+
+h3 {
+    color: #34495e;
 }
 
 table {
-	border-collapse: collapse;
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
 }
 
-table > thead > tr > th {
-	text-align: left;
-	border-bottom: 1px solid;
+table th, table td {
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    text-align: left;
 }
 
-table > thead > tr > th,
-table > thead > tr > td,
-table > tbody > tr > th,
-table > tbody > tr > td {
-	padding: 5px 10px;
+table th {
+    background-color: #f5f7fa;
+    font-weight: 600;
 }
 
-table > tbody > tr + tr > td {
-	border-top: 1px solid;
-}
-
-blockquote {
-	margin: 0 7px 0 5px;
-	padding: 0 16px 0 10px;
-	border-left-width: 5px;
-	border-left-style: solid;
+table tr:nth-child(even) {
+    background-color: #fafafa;
 }
 
 code {
-	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
-	font-size: 1em;
-	line-height: 1.357em;
-}
-
-body.wordWrap pre {
-	white-space: pre-wrap;
-}
-
-pre:not(.hljs),
-pre.hljs code > div {
-	padding: 16px;
-	border-radius: 3px;
-	overflow: auto;
-}
-
-pre code {
-	color: var(--vscode-editor-foreground);
-	tab-size: 4;
-}
-
-/** Theming */
-
-.vscode-light pre {
-	background-color: rgba(220, 220, 220, 0.4);
-}
-
-.vscode-dark pre {
-	background-color: rgba(10, 10, 10, 0.4);
-}
-
-.vscode-high-contrast pre {
-	background-color: rgb(0, 0, 0);
-}
-
-.vscode-high-contrast h1 {
-	border-color: rgb(0, 0, 0);
-}
-
-.vscode-light table > thead > tr > th {
-	border-color: rgba(0, 0, 0, 0.69);
-}
-
-.vscode-dark table > thead > tr > th {
-	border-color: rgba(255, 255, 255, 0.69);
-}
-
-.vscode-light h1,
-.vscode-light hr,
-.vscode-light table > tbody > tr + tr > td {
-	border-color: rgba(0, 0, 0, 0.18);
-}
-
-.vscode-dark h1,
-.vscode-dark hr,
-.vscode-dark table > tbody > tr + tr > td {
-	border-color: rgba(255, 255, 255, 0.18);
-}
-
-</style>
-
-<style>
-/* Tomorrow Theme */
-/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
-/* Original theme - https://github.com/chriskempson/tomorrow-theme */
-
-/* Tomorrow Comment */
-.hljs-comment,
-.hljs-quote {
-	color: #8e908c;
-}
-
-/* Tomorrow Red */
-.hljs-variable,
-.hljs-template-variable,
-.hljs-tag,
-.hljs-name,
-.hljs-selector-id,
-.hljs-selector-class,
-.hljs-regexp,
-.hljs-deletion {
-	color: #c82829;
-}
-
-/* Tomorrow Orange */
-.hljs-number,
-.hljs-built_in,
-.hljs-builtin-name,
-.hljs-literal,
-.hljs-type,
-.hljs-params,
-.hljs-meta,
-.hljs-link {
-	color: #f5871f;
-}
-
-/* Tomorrow Yellow */
-.hljs-attribute {
-	color: #eab700;
-}
-
-/* Tomorrow Green */
-.hljs-string,
-.hljs-symbol,
-.hljs-bullet,
-.hljs-addition {
-	color: #718c00;
-}
-
-/* Tomorrow Blue */
-.hljs-title,
-.hljs-section {
-	color: #4271ae;
-}
-
-/* Tomorrow Purple */
-.hljs-keyword,
-.hljs-selector-tag {
-	color: #8959a8;
-}
-
-.hljs {
-	display: block;
-	overflow-x: auto;
-	color: #4d4d4c;
-	padding: 0.5em;
-}
-
-.hljs-emphasis {
-	font-style: italic;
-}
-
-.hljs-strong {
-	font-weight: bold;
-}
-</style>
-
-<style>
-/*
- * Markdown PDF CSS
- */
-
- body {
-	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
-	padding: 0 12px;
+    background-color: #f4f4f4;
+    padding: 2px 6px;
+    border-radius: 3px;
+    font-family: Consolas, "Courier New", monospace;
+    font-size: 14px;
 }
 
 pre {
-	background-color: #f8f8f8;
-	border: 1px solid #cccccc;
-	border-radius: 3px;
-	overflow-x: auto;
-	white-space: pre-wrap;
-	overflow-wrap: break-word;
+    background-color: #f8f8f8;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 16px;
+    overflow-x: auto;
 }
 
-pre:not(.hljs) {
-	padding: 23px;
-	line-height: 19px;
+pre code {
+    background: none;
+    padding: 0;
 }
 
 blockquote {
-	background: rgba(127, 127, 127, 0.1);
-	border-color: rgba(0, 122, 204, 0.5);
+    margin: 0.5em 0;
+    padding: 8px 16px;
+    border-left: 4px solid #4a90d9;
+    background: #f0f7ff;
+    color: #555;
 }
 
-.emoji {
-	height: 1.4em;
+a {
+    color: #4a90d9;
+    text-decoration: none;
 }
 
-code {
-	font-size: 14px;
-	line-height: 19px;
+a:hover {
+    text-decoration: underline;
 }
 
-/* for inline code */
-:not(pre):not(.hljs) > code {
-	color: #C9AE75; /* Change the old color so it seems less like an error */
-	font-size: inherit;
+hr {
+    border: none;
+    border-top: 1px solid #eee;
+    margin: 2em 0;
 }
 
-/* Page Break : use <div class="page"/> or <div class="page"></div> to insert page break
--------------------------------------------------------- */
-.page {
-	page-break-after: always;
+strong {
+    color: #2c3e50;
 }
 
+ol, ul {
+    padding-left: 1.5em;
+}
+
+li {
+    margin: 0.3em 0;
+}
 </style>
-
-<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
 </head>
 <body>
-  <script>
-    mermaid.initialize({
-      startOnLoad: true,
-      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
-          ? 'dark'
-          : 'default'
-    });
-  </script>
-<h1 id="喝水提醒小程序-">喝水提醒小程序 💧</h1>
-<p>一个简洁实用的 PC 端喝水提醒工具，帮助你保持水分充足，养成健康饮水习惯。</p>
-<h2 id="-功能特点">✨ 功能特点</h2>
-<ul>
-<li>⏰ <strong>定时提醒</strong>：可自定义提醒间隔、时长和次数</li>
-<li>🎨 <strong>动态 GIF</strong>：支持自定义 GIF 动画，让提醒更有趣</li>
-<li>🎯 <strong>智能定位</strong>：自动记录窗口位置，下次启动时恢复</li>
-<li>🌤️ <strong>天气显示</strong>：实时显示当地天气和明日天气预报（需配置高德 API Key）</li>
-<li>🚀 <strong>开机自启</strong>：支持开机自动启动</li>
-<li>🔒 <strong>加密存储</strong>：配置信息加密保存在用户目录，保护隐私</li>
-<li>⚙️ <strong>系统托盘</strong>：右键托盘图标即可打开设置或退出程序</li>
-<li>🎨 <strong>高度自定义</strong>：支持自定义提醒内容、颜色、字体大小等</li>
-</ul>
-<h2 id="-环境要求">📋 环境要求</h2>
-<ul>
-<li>Windows 7/8/10/11</li>
-<li>Python 3.7+（源码运行时需要）</li>
-<li>网络连接（用于获取天气信息）</li>
-</ul>
-<h3 id="依赖安装">依赖安装</h3>
-<pre class="hljs"><code><div>pip install -r requirements.txt
-</div></code></pre>
-<p>主要依赖：</p>
-<table>
-<thead>
-<tr>
-<th>库</th>
-<th>用途</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>Pillow</td>
-<td>GIF 动画处理</td>
-</tr>
-<tr>
-<td>requests</td>
-<td>天气 API 请求</td>
-</tr>
-<tr>
-<td>cryptography</td>
-<td>配置文件加密</td>
-</tr>
-<tr>
-<td>pystray</td>
-<td>系统托盘图标</td>
-</tr>
-</tbody>
-</table>
-<h2 id="-开始使用">🚀 开始使用</h2>
-<h3 id="启动程序">启动程序</h3>
-<p><strong>exe 方式：</strong> 双击运行 <code>喝水提醒.exe</code></p>
-<p><strong>源码方式：</strong></p>
-<pre class="hljs"><code><div>python drink.py
-</div></code></pre>
-<p>程序启动后会在屏幕上显示一个 GIF 动画角色，到达设定时间后自动弹出提醒。</p>
-<h3 id="首次运行">首次运行</h3>
-<p>首次启动时，程序会自动生成默认配置并加密保存到 <code>%APPDATA%\DrinkReminder\config.dat</code>，无需手动创建配置文件。</p>
-<p>默认配置值：</p>
-<table>
-<thead>
-<tr>
-<th>配置项</th>
-<th>默认值</th>
-<th>说明</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>gif_path</td>
-<td>normal.gif</td>
-<td>默认 GIF</td>
-</tr>
-<tr>
-<td>reminder_gif_path</td>
-<td>touchhead.gif</td>
-<td>提醒 GIF</td>
-</tr>
-<tr>
-<td>reminder_interval</td>
-<td>30</td>
-<td>提醒间隔（分钟）</td>
-</tr>
-<tr>
-<td>reminder_time</td>
-<td>60</td>
-<td>提醒时长（秒）</td>
-</tr>
-<tr>
-<td>reminder_count</td>
-<td>30</td>
-<td>每日提醒次数</td>
-</tr>
-<tr>
-<td>reminder_text</td>
-<td>该喝水了哦宝宝！记得保持水分充足哦~</td>
-<td>提醒文字</td>
-</tr>
-<tr>
-<td>reminder_text_color</td>
-<td>(65, 112, 224, 1.0)</td>
-<td>文字颜色 RGBA</td>
-</tr>
-<tr>
-<td>to_time</td>
-<td>23:00</td>
-<td>停止提醒时间</td>
-</tr>
-<tr>
-<td>weather</td>
-<td>110000</td>
-<td>天气城市代码</td>
-</tr>
-<tr>
-<td>weather_key</td>
-<td>（空）</td>
-<td>高德天气 API Key</td>
-</tr>
-<tr>
-<td>drink_font_size</td>
-<td>12</td>
-<td>提醒字体大小</td>
-</tr>
-<tr>
-<td>weather_font_size</td>
-<td>11</td>
-<td>天气字体大小</td>
-</tr>
-<tr>
-<td>auto_start</td>
-<td>1</td>
-<td>开机自启动</td>
-</tr>
-</tbody>
-</table>
-<h2 id="️-配置方式">⚙️ 配置方式</h2>
-<h3 id="通过系统托盘设置推荐">通过系统托盘设置（推荐）</h3>
-<p>程序运行后，桌面右下角系统托盘会出现图标，右键点击可以：</p>
-<ul>
-<li><strong>设置</strong>：打开设置对话框，可视化配置所有参数</li>
-<li><strong>退出</strong>：安全退出程序</li>
-</ul>
-<p>设置对话框分为三个区域：</p>
-<ul>
-<li><strong>外观</strong>：GIF 路径、文字颜色、字体大小</li>
-<li><strong>提醒</strong>：间隔、时长、次数、提醒文字、截止时间</li>
-<li><strong>天气</strong>：城市代码、API Key</li>
-</ul>
-<h3 id="配置文件存储">配置文件存储</h3>
-<p>配置文件加密保存在：</p>
-<pre class="hljs"><code><div>%APPDATA%\DrinkReminder\config.dat
-</div></code></pre>
-<p>使用基于机器特征的密钥加密，保护 API Key 等敏感信息。</p>
-<h2 id="️-天气功能">🌤️ 天气功能</h2>
-<p>如需显示天气信息，需要配置城市代码和 API Key。</p>
-<p><strong>获取城市代码：</strong></p>
-<ul>
-<li>访问高德地图官网查询城市编码</li>
-<li>例如：北京 <code>110000</code>、广州 <code>440100</code></li>
-</ul>
-<p><strong>获取 API Key：</strong></p>
-<ol>
-<li>访问 <a href="https://lbs.amap.com/api/webservice/guide/api-advanced/weatherinfo">高德开放平台</a></li>
-<li>注册账号并创建应用</li>
-<li>获取 Web 服务类型的 API Key</li>
-<li>在设置对话框中填入</li>
-</ol>
-<p><strong>更新频率：</strong></p>
-<ul>
-<li>当前天气：每 30 分钟</li>
-<li>明日天气：每 2 小时（中午 12 点后加快）</li>
-</ul>
-<h2 id="-使用技巧">🎯 使用技巧</h2>
-<h3 id="窗口操作">窗口操作</h3>
-<table>
-<thead>
-<tr>
-<th>操作</th>
-<th>效果</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>左键拖拽 GIF</td>
-<td>移动窗口位置（自动保存）</td>
-</tr>
-<tr>
-<td>双击 GIF</td>
-<td>进入/退出休眠模式（显示 zzz）</td>
-</tr>
-<tr>
-<td>托盘右键 → 设置</td>
-<td>打开设置对话框</td>
-</tr>
-<tr>
-<td>托盘右键 → 退出</td>
-<td>安全退出程序</td>
-</tr>
-</tbody>
-</table>
-<h3 id="推荐提醒频率">推荐提醒频率</h3>
-<ul>
-<li><strong>办公族</strong>：30-45 分钟一次</li>
-<li><strong>居家办公</strong>：45-60 分钟一次</li>
-<li><strong>专注工作</strong>：60 分钟一次</li>
-</ul>
-<h3 id="更换-gif">更换 GIF</h3>
-<ol>
-<li>将 GIF 文件放在程序同一目录下</li>
-<li>通过托盘 → 设置，修改 GIF 路径</li>
-<li>保存后自动生效</li>
-</ol>
-<h2 id="-常见问题">❓ 常见问题</h2>
-<p><strong>Q: 程序启动后看不到窗口？</strong>
-A: 通过托盘 → 设置，将窗口坐标调整为合理值，或删除 <code>%APPDATA%\DrinkReminder\config.dat</code> 重新生成默认配置。</p>
-<p><strong>Q: GIF 图片不显示？</strong>
-A: 检查 GIF 文件是否在程序目录下，文件名是否与设置中一致。</p>
-<p><strong>Q: 天气信息不显示？</strong>
-A: 检查城市代码是否正确、API Key 是否填写、网络是否正常。</p>
-<p><strong>Q: 如何退出程序？</strong>
-A: 右键桌面右下角系统托盘图标，选择&quot;退出&quot;。</p>
-<h2 id="-文件结构">📁 文件结构</h2>
-<pre class="hljs"><code><div>DrinkReminder/
-├── drink.py              # 主程序
-├── config_manager.py     # 加密配置管理器
-├── settings_dialog.py    # 设置对话框
-├── requirements.txt      # 依赖清单
-├── normal.gif            # 默认 GIF 动画
-├── touchhead.gif         # 提醒时 GIF 动画
-└── README.md             # 使用说明
-</div></code></pre>
-<h2 id="-打包为-exe">📦 打包为 exe</h2>
-<pre class="hljs"><code><div>pyinstaller 喝水提醒.spec
-</div></code></pre>
-<p>打包后的 exe 位于 <code>dist/</code> 目录下。</p>
-<hr>
-<p><strong>温馨提示：</strong> 多喝水，保持健康！💧</p>
+<h1>喝水提醒小程序</h1>
+<p>一款桌面小工具，定时提醒你喝水，还能显示天气，帮你养成健康饮水习惯。</p>
 
+<h2>下载和安装</h2>
+<p><strong>普通用户（推荐）：</strong> 直接双击 <code>喝水提醒.exe</code> 即可运行，无需安装任何东西。</p>
+<p><strong>程序员用户：</strong> 如果你想从源码运行：</p>
+<pre><code>pip install Pillow requests cryptography pystray
+python drink.py</code></pre>
+
+<h2>基本使用</h2>
+<p>程序启动后，屏幕上会出现一个可爱的小动画角色。每隔一段时间，它会变换动作提醒你该喝水了。</p>
+
+<h3>日常操作</h3>
+<table>
+<thead>
+<tr><th>你想做什么</th><th>怎么操作</th></tr>
+</thead>
+<tbody>
+<tr><td>移动小角色位置</td><td>用鼠标左键拖拽它</td></tr>
+<tr><td>暂时不想被打扰</td><td>双击小角色，进入休眠（会显示 zzz）</td></tr>
+<tr><td>恢复提醒</td><td>再次双击小角色</td></tr>
+<tr><td>修改设置</td><td>右键点击屏幕右下角托盘图标 → 设置</td></tr>
+<tr><td>退出程序</td><td>右键点击屏幕右下角托盘图标 → 退出</td></tr>
+</tbody>
+</table>
+<blockquote>提示：程序启动后会缩到屏幕右下角的系统托盘里（就是时间旁边那一排小图标）。</blockquote>
+
+<h2>设置说明</h2>
+<p>右键托盘图标 → 点击"设置"，可以调整以下内容：</p>
+
+<h3>提醒相关</h3>
+<table>
+<thead>
+<tr><th>设置项</th><th>说明</th><th>默认值</th></tr>
+</thead>
+<tbody>
+<tr><td>提醒间隔</td><td>多久提醒一次（分钟）</td><td>30 分钟</td></tr>
+<tr><td>提醒时长</td><td>每次提醒持续多久（秒）</td><td>60 秒</td></tr>
+<tr><td>提醒次数</td><td>一天最多提醒几次</td><td>30 次</td></tr>
+<tr><td>提醒文字</td><td>提醒时显示的话</td><td>该喝水了哦宝宝！</td></tr>
+<tr><td>截止时间</td><td>几点后不再提醒</td><td>23:00</td></tr>
+</tbody>
+</table>
+
+<h3>外观相关</h3>
+<table>
+<thead>
+<tr><th>设置项</th><th>说明</th></tr>
+</thead>
+<tbody>
+<tr><td>GIF 路径</td><td>小角色的动画文件</td></tr>
+<tr><td>文字颜色</td><td>提醒文字的颜色</td></tr>
+<tr><td>字体大小</td><td>文字显示大小</td></tr>
+</tbody>
+</table>
+
+<h3>天气功能（可选）</h3>
+<p>想在桌面上看到天气信息？按以下步骤设置：</p>
+<ol>
+<li>打开 <a href="https://lbs.amap.com/api/webservice/guide/api-advanced/weatherinfo">高德开放平台</a>，注册一个账号</li>
+<li>创建应用，获取一个 <strong>Web 服务</strong> 类型的 API Key</li>
+<li>在设置里填入你的 API Key</li>
+<li>填入你所在城市的代码（例如：北京 <code>110000</code>、上海 <code>310000</code>、广州 <code>440100</code>）</li>
+</ol>
+<p>设置完成后，程序会自动显示当前天气和明天的天气预报。</p>
+
+<h2>建议提醒频率</h2>
+<table>
+<thead>
+<tr><th>你的情况</th><th>建议间隔</th></tr>
+</thead>
+<tbody>
+<tr><td>坐办公室工作</td><td>30～45 分钟</td></tr>
+<tr><td>在家办公</td><td>45～60 分钟</td></tr>
+<tr><td>专注模式（不想被频繁打扰）</td><td>60 分钟</td></tr>
+</tbody>
+</table>
+
+<h2>常见问题</h2>
+
+<p><strong>启动后找不到小角色在哪？</strong></p>
+<blockquote>可能跑到屏幕外面去了。右键托盘图标 → 设置，把窗口坐标改成 100, 100，保存后就能看到了。或者删除配置文件重新来：找到 <code>%APPDATA%\DrinkReminder\config.dat</code> 这个文件删掉，重启程序即可。</blockquote>
+
+<p><strong>天气不显示？</strong></p>
+<blockquote>检查三件事：① API Key 填对了没 ② 城市代码填对了没 ③ 电脑能不能上网</blockquote>
+
+<p><strong>换了 GIF 没效果？</strong></p>
+<blockquote>确保 GIF 文件放在和程序同一个文件夹里，并且设置里的文件名和实际文件名完全一致（包括大小写）。</blockquote>
+
+<p><strong>怎么让程序开机自动启动？</strong></p>
+<blockquote>设置里有"开机自启"选项，默认就是开启的。</blockquote>
+
+<p><strong>怎么彻底关闭程序？</strong></p>
+<blockquote>右键屏幕右下角托盘图标，选择"退出"。直接关闭窗口是关不掉的哦。</blockquote>
+
+<hr>
+<p>多喝水，保持健康！</p>
 </body>
 </html>
