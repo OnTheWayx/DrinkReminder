@@ -185,7 +185,7 @@ class HydrationReminder:
         self.window_x = int(cfg.get('window_x', 720))
         self.window_y = int(cfg.get('window_y', 360))
         self.subtitle_enabled = int(cfg.get('subtitle_enabled', 0))
-        self.subtitle_text = cfg.get('subtitle_text', '该喝水拉~')
+        self.subtitle_text = cfg.get('subtitle_text', '该喝水啦~')
         self.subtitle_position = cfg.get('subtitle_position', 'right')
         self.subtitle_font_size = int(cfg.get('subtitle_font_size', 48))
 
@@ -321,7 +321,7 @@ class HydrationReminder:
             self.weather_font_size = result['weather_font_size']
             self.auto_start = str(result['auto_start'])
             self.subtitle_enabled = int(result.get('subtitle_enabled', 0))
-            self.subtitle_text = result.get('subtitle_text', '该喝水拉~')
+            self.subtitle_text = result.get('subtitle_text', '该喝水啦~')
             self.subtitle_position = result.get('subtitle_position', 'right')
             self.subtitle_font_size = int(result.get('subtitle_font_size', 48))
             gif_path = result['gif_path']

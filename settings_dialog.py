@@ -94,7 +94,7 @@ class SettingsDialog:
         grp_sub.pack(fill=tk.X, pady=(0, 6))
 
         self.subtitle_enabled_var = tk.IntVar(value=cfg.get('subtitle_enabled', 0))
-        self.subtitle_text_var = tk.StringVar(value=cfg.get('subtitle_text', '该喝水拉~'))
+        self.subtitle_text_var = tk.StringVar(value=cfg.get('subtitle_text', '该喝水啦~'))
         self.subtitle_position_var = tk.StringVar(value=cfg.get('subtitle_position', 'right'))
         self.subtitle_font_var = tk.IntVar(value=cfg.get('subtitle_font_size', 48))
 
