@@ -96,7 +96,7 @@ class SettingsDialog:
         self.subtitle_enabled_var = tk.IntVar(value=cfg.get('subtitle_enabled', 0))
         self.subtitle_text_var = tk.StringVar(value=cfg.get('subtitle_text', '该喝水啦~'))
         self.subtitle_position_var = tk.StringVar(value=cfg.get('subtitle_position', 'right'))
-        self.subtitle_font_var = tk.IntVar(value=cfg.get('subtitle_font_size', 64))
+        self.subtitle_font_var = tk.IntVar(value=cfg.get('subtitle_font_size', 128))
 
         r = 0
         tk.Checkbutton(grp_sub, text="启用大号字幕提醒", variable=self.subtitle_enabled_var, bg='#f0f0f0').grid(row=r, column=0, columnspan=2, sticky='w', **_PAD)
