@@ -1016,6 +1016,7 @@ class HydrationReminder:
         text = self.subtitle_text
         font_size = self.subtitle_font_size
         color = self.reminder_text_color
+        print(f"[字幕] font_size={font_size}, pos={pos}, text={text}, color={color}")
 
         # 左/右纵向显示（每字一行），上/下横向显示
         if pos in ('left', 'right'):
