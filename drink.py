@@ -1006,8 +1006,11 @@ class HydrationReminder:
         self.subtitle_window = tk.Toplevel(self.root)
         self.subtitle_window.overrideredirect(True)
         self.subtitle_window.attributes("-topmost", True)
-        self.subtitle_window.config(bg='white')
-        self.subtitle_window.wm_attributes("-transparentcolor", 'white')
+        # 使用特殊颜色作为透明色，避免与文字/背景冲突
+        transparent_color = '#010101'
+        self.subtitle_window.config(bg=transparent_color)
+        self.subtitle_window.wm_attributes("-transparentcolor", transparent_color)
+        self.subtitle_window.attributes("-alpha", 0.95)
 
         pos = self.subtitle_position
         text = self.subtitle_text
@@ -1025,7 +1028,7 @@ class HydrationReminder:
             text=display_text,
             font=("Arial", font_size, "bold"),
             fg=color,
-            bg='white',
+            bg=transparent_color,
             justify=tk.CENTER
         )
         label.pack()
