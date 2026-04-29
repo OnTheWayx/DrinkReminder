@@ -111,7 +111,7 @@ class SettingsDialog:
             tk.Radiobutton(pos_frame, text=text, variable=self.subtitle_position_var, value=val, bg='#f0f0f0').pack(side=tk.LEFT, padx=2)
         r += 1
         tk.Label(grp_sub, text="字体大小:", bg='#f0f0f0').grid(row=r, column=0, sticky='w', **_PAD)
-        tk.Spinbox(grp_sub, from_=20, to=120, textvariable=self.subtitle_font_var, width=6).grid(row=r, column=1, sticky='w', **_PAD)
+        tk.Spinbox(grp_sub, from_=20, to=999, textvariable=self.subtitle_font_var, width=6).grid(row=r, column=1, sticky='w', **_PAD)
 
         # ── 天气设置 ──
         grp3 = tk.LabelFrame(outer, text=" 天气 ", padx=8, pady=6, bg='#f0f0f0')

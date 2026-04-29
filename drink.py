@@ -359,6 +359,13 @@ class HydrationReminder:
             if self.weather != '0':
                 self.update_weather_info()
 
+            # 如果字幕正在显示，刷新字幕（应用新的位置/字体/内容）
+            if self.subtitle_window:
+                if self.subtitle_enabled:
+                    self.show_subtitle()
+                else:
+                    self.hide_subtitle()
+
             messagebox.showinfo("成功", "设置已保存！部分设置需要重启程序后生效。")
 
     def _on_tray_quit(self, icon=None, item=None):
