@@ -78,6 +78,7 @@ class HydrationReminder:
         # 初始化提醒状态
         self.reminder_active = False
         self.reminder_thread = None
+        self.subtitle_window = None
 
         # 隐藏状态
         self.hidden_mode = False
@@ -183,6 +184,10 @@ class HydrationReminder:
         self.auto_start = str(cfg.get('auto_start', 1))
         self.window_x = int(cfg.get('window_x', 720))
         self.window_y = int(cfg.get('window_y', 360))
+        self.subtitle_enabled = int(cfg.get('subtitle_enabled', 0))
+        self.subtitle_text = cfg.get('subtitle_text', '该喝水拉~')
+        self.subtitle_position = cfg.get('subtitle_position', 'right')
+        self.subtitle_font_size = int(cfg.get('subtitle_font_size', 48))
 
     def _resolve_gif_path(self, gif_path):
         """解析GIF路径：优先使用外部文件，找不到则回退到内置资源"""
@@ -226,7 +231,11 @@ class HydrationReminder:
             'weather_font_size': self.weather_font_size,
             'auto_start': int(self.auto_start),
             'window_x': self.window_x,
-            'window_y': self.window_y
+            'window_y': self.window_y,
+            'subtitle_enabled': self.subtitle_enabled,
+            'subtitle_text': self.subtitle_text,
+            'subtitle_position': self.subtitle_position,
+            'subtitle_font_size': self.subtitle_font_size
         }
         self.config_manager.save(cfg)
 
@@ -291,6 +300,10 @@ class HydrationReminder:
             'drink_font_size': self.drink_font_size,
             'weather_font_size': self.weather_font_size,
             'auto_start': int(self.auto_start),
+            'subtitle_enabled': self.subtitle_enabled,
+            'subtitle_text': self.subtitle_text,
+            'subtitle_position': self.subtitle_position,
+            'subtitle_font_size': self.subtitle_font_size,
         }
 
         dialog = SettingsDialog(self.root, current, self.app_dir, on_readme=self._open_readme)
@@ -307,8 +320,10 @@ class HydrationReminder:
             self.drink_font_size = result['drink_font_size']
             self.weather_font_size = result['weather_font_size']
             self.auto_start = str(result['auto_start'])
-
-            # GIF路径
+            self.subtitle_enabled = int(result.get('subtitle_enabled', 0))
+            self.subtitle_text = result.get('subtitle_text', '该喝水拉~')
+            self.subtitle_position = result.get('subtitle_position', 'right')
+            self.subtitle_font_size = int(result.get('subtitle_font_size', 48))
             gif_path = result['gif_path']
             self.gif_path = self._resolve_gif_path(gif_path)
             rgif_path = result['reminder_gif_path']
@@ -768,9 +783,10 @@ class HydrationReminder:
             self.animation_id = self.root.after(100, self.animate_reminder_gif)
     
     def on_double_click(self, event):
-        """双击切换隐藏状态（仅在正常状态或隐藏状态下有效）"""
+        """双击切换隐藏状态，提醒状态下双击可退出提醒"""
         if self.reminder_active:
-            # 喝水提醒状态下双击无效
+            # 提醒状态下双击退出提醒，回到之前状态
+            self.hide_reminder()
             return
         if self.hidden_mode:
             self.exit_hidden_mode()
@@ -975,6 +991,59 @@ class HydrationReminder:
         self.start_y = event.y_root
         self.dragged = True  # 标记发生了实际拖拽
     
+    def show_subtitle(self):
+        """显示大号字幕提醒窗口"""
+        self.subtitle_window = tk.Toplevel(self.root)
+        self.subtitle_window.overrideredirect(True)
+        self.subtitle_window.attributes("-topmost", True)
+        self.subtitle_window.config(bg='white')
+        self.subtitle_window.wm_attributes("-transparentcolor", 'white')
+
+        pos = self.subtitle_position
+        text = self.subtitle_text
+        font_size = self.subtitle_font_size
+        color = self.reminder_text_color
+
+        # 左/右纵向显示（每字一行），上/下横向显示
+        if pos in ('left', 'right'):
+            display_text = '\n'.join(text)
+        else:
+            display_text = text
+
+        label = tk.Label(
+            self.subtitle_window,
+            text=display_text,
+            font=("Arial", font_size, "bold"),
+            fg=color,
+            bg='white',
+            justify=tk.CENTER
+        )
+        label.pack()
+
+        # 等待窗口渲染以获取实际尺寸
+        self.subtitle_window.update_idletasks()
+        w = self.subtitle_window.winfo_reqwidth()
+        h = self.subtitle_window.winfo_reqheight()
+        sw = self.subtitle_window.winfo_screenwidth()
+        sh = self.subtitle_window.winfo_screenheight()
+
+        if pos == 'left':
+            x, y = 0, (sh - h) // 2
+        elif pos == 'right':
+            x, y = sw - w, (sh - h) // 2
+        elif pos == 'top':
+            x, y = (sw - w) // 2, 0
+        else:  # bottom
+            x, y = (sw - w) // 2, sh - h
+
+        self.subtitle_window.geometry(f'{w}x{h}+{x}+{y}')
+
+    def hide_subtitle(self):
+        """隐藏大号字幕提醒窗口"""
+        if hasattr(self, 'subtitle_window') and self.subtitle_window:
+            self.subtitle_window.destroy()
+            self.subtitle_window = None
+
     def show_reminder(self):
         """显示提醒"""
         # 如果处于隐藏状态，先退出隐藏状态，提醒结束后会自动回到隐藏状态
@@ -1007,9 +1076,16 @@ class HydrationReminder:
         
         # 使用配置的提醒时长自动隐藏提醒，恢复正常透明度
         self.root.after(self.reminder_time, self.hide_reminder)
+
+        # 显示大号字幕
+        if self.subtitle_enabled:
+            self.show_subtitle()
     
     def hide_reminder(self):
         """隐藏提醒"""
+        # 隐藏大号字幕
+        self.hide_subtitle()
+
         if self.label_visible:
             self.label.pack_forget()
             self.label_visible = False

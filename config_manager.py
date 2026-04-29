@@ -25,7 +25,11 @@ class ConfigManager:
         'weather_font_size': 11,
         'auto_start': 1,
         'window_x': 720,
-        'window_y': 360
+        'window_y': 360,
+        'subtitle_enabled': 0,
+        'subtitle_text': '该喝水拉~',
+        'subtitle_position': 'right',
+        'subtitle_font_size': 48
     }
 
     def __init__(self):
