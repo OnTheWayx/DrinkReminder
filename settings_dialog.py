@@ -89,6 +89,30 @@ class SettingsDialog:
         tk.Entry(grp2, textvariable=self.to_time_var, width=8).grid(row=r, column=1, sticky='w', **_PAD)
         tk.Label(grp2, text="(如 23:00)", fg='#888', bg='#f0f0f0').grid(row=r, column=2, columnspan=2, sticky='w', **_PAD)
 
+        # ── 大号字幕设置 ──
+        grp_sub = tk.LabelFrame(outer, text=" 大号字幕 ", padx=8, pady=6, bg='#f0f0f0')
+        grp_sub.pack(fill=tk.X, pady=(0, 6))
+
+        self.subtitle_enabled_var = tk.IntVar(value=cfg.get('subtitle_enabled', 0))
+        self.subtitle_text_var = tk.StringVar(value=cfg.get('subtitle_text', '该喝水拉~'))
+        self.subtitle_position_var = tk.StringVar(value=cfg.get('subtitle_position', 'right'))
+        self.subtitle_font_var = tk.IntVar(value=cfg.get('subtitle_font_size', 48))
+
+        r = 0
+        tk.Checkbutton(grp_sub, text="启用大号字幕提醒", variable=self.subtitle_enabled_var, bg='#f0f0f0').grid(row=r, column=0, columnspan=2, sticky='w', **_PAD)
+        r += 1
+        tk.Label(grp_sub, text="字幕内容:", bg='#f0f0f0').grid(row=r, column=0, sticky='w', **_PAD)
+        tk.Entry(grp_sub, textvariable=self.subtitle_text_var, width=_ENTRY_W).grid(row=r, column=1, sticky='w', **_PAD)
+        r += 1
+        tk.Label(grp_sub, text="显示位置:", bg='#f0f0f0').grid(row=r, column=0, sticky='w', **_PAD)
+        pos_frame = tk.Frame(grp_sub, bg='#f0f0f0')
+        pos_frame.grid(row=r, column=1, sticky='w', **_PAD)
+        for text, val in [("左侧", "left"), ("右侧", "right"), ("顶部", "top"), ("底部", "bottom")]:
+            tk.Radiobutton(pos_frame, text=text, variable=self.subtitle_position_var, value=val, bg='#f0f0f0').pack(side=tk.LEFT, padx=2)
+        r += 1
+        tk.Label(grp_sub, text="字体大小:", bg='#f0f0f0').grid(row=r, column=0, sticky='w', **_PAD)
+        tk.Spinbox(grp_sub, from_=20, to=120, textvariable=self.subtitle_font_var, width=6).grid(row=r, column=1, sticky='w', **_PAD)
+
         # ── 天气设置 ──
         grp3 = tk.LabelFrame(outer, text=" 天气 ", padx=8, pady=6, bg='#f0f0f0')
         grp3.pack(fill=tk.X, pady=(0, 6))
@@ -173,6 +197,10 @@ class SettingsDialog:
             'drink_font_size': self.dfont_var.get(),
             'weather_font_size': self.wfont_var.get(),
             'auto_start': self.autostart_var.get(),
+            'subtitle_enabled': self.subtitle_enabled_var.get(),
+            'subtitle_text': self.subtitle_text_var.get(),
+            'subtitle_position': self.subtitle_position_var.get(),
+            'subtitle_font_size': self.subtitle_font_var.get(),
         }
         self.dialog.destroy()
 
