@@ -323,7 +323,7 @@ class HydrationReminder:
             self.subtitle_enabled = int(result.get('subtitle_enabled', 0))
             self.subtitle_text = result.get('subtitle_text', '该喝水啦~')
             self.subtitle_position = result.get('subtitle_position', 'right')
-            self.subtitle_font_size = int(result.get('subtitle_font_size', 48))
+            self.subtitle_font_size = int(result.get('subtitle_font_size', 128))
             gif_path = result['gif_path']
             self.gif_path = self._resolve_gif_path(gif_path)
             rgif_path = result['reminder_gif_path']
@@ -1016,7 +1016,6 @@ class HydrationReminder:
         text = self.subtitle_text
         font_size = self.subtitle_font_size
         color = self.reminder_text_color
-        print(f"[字幕] font_size={font_size}, pos={pos}, text={text}, color={color}")
 
         # 左/右纵向显示（每字一行），上/下横向显示
         if pos in ('left', 'right'):
