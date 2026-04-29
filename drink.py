@@ -187,7 +187,7 @@ class HydrationReminder:
         self.subtitle_enabled = int(cfg.get('subtitle_enabled', 0))
         self.subtitle_text = cfg.get('subtitle_text', '该喝水啦~')
         self.subtitle_position = cfg.get('subtitle_position', 'right')
-        self.subtitle_font_size = int(cfg.get('subtitle_font_size', 48))
+        self.subtitle_font_size = int(cfg.get('subtitle_font_size', 64))
 
     def _resolve_gif_path(self, gif_path):
         """解析GIF路径：优先使用外部文件，找不到则回退到内置资源"""
@@ -993,6 +993,9 @@ class HydrationReminder:
     
     def show_subtitle(self):
         """显示大号字幕提醒窗口"""
+        # 先销毁已有的字幕窗口，防止重复显示
+        self.hide_subtitle()
+
         self.subtitle_window = tk.Toplevel(self.root)
         self.subtitle_window.overrideredirect(True)
         self.subtitle_window.attributes("-topmost", True)
@@ -1027,14 +1030,17 @@ class HydrationReminder:
         sw = self.subtitle_window.winfo_screenwidth()
         sh = self.subtitle_window.winfo_screenheight()
 
+        # 偏向屏幕中间一点的边距
+        margin = 80
+
         if pos == 'left':
-            x, y = 0, (sh - h) // 2
+            x, y = margin, (sh - h) // 2
         elif pos == 'right':
-            x, y = sw - w, (sh - h) // 2
+            x, y = sw - w - margin, (sh - h) // 2
         elif pos == 'top':
-            x, y = (sw - w) // 2, 0
+            x, y = (sw - w) // 2, margin
         else:  # bottom
-            x, y = (sw - w) // 2, sh - h
+            x, y = (sw - w) // 2, sh - h - margin
 
         self.subtitle_window.geometry(f'{w}x{h}+{x}+{y}')
 
