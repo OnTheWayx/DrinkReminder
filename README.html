@@ -109,102 +109,102 @@ li {
 </style>
 </head>
 <body>
-<h1>喝水提醒小程序</h1>
+<h1>💧 喝水提醒小程序</h1>
 <p>一款桌面小工具，定时提醒你喝水，还能显示天气，帮你养成健康饮水习惯。</p>
 
-<h2>下载和安装</h2>
-<p><strong>普通用户（推荐）：</strong> 直接双击 <code>喝水提醒.exe</code> 即可运行，无需安装任何东西。</p>
-<p><strong>程序员用户：</strong> 如果你想从源码运行：</p>
+<h2>📥 下载和安装</h2>
+<p><strong>🎯 普通用户（推荐）：</strong> 直接双击 <code>喝水提醒.exe</code> 即可运行，无需安装任何东西。</p>
+<p><strong>💻 程序员用户：</strong> 如果你想从源码运行：</p>
 <pre><code>pip install Pillow requests cryptography pystray
 python drink.py</code></pre>
 
-<h2>基本使用</h2>
+<h2>🎬 基本使用</h2>
 <p>程序启动后，屏幕上会出现一个可爱的小动画角色。每隔一段时间，它会变换动作提醒你该喝水了。</p>
 
-<h3>日常操作</h3>
+<h3>🖱️ 日常操作</h3>
 <table>
 <thead>
 <tr><th>你想做什么</th><th>怎么操作</th></tr>
 </thead>
 <tbody>
-<tr><td>移动小角色位置</td><td>用鼠标左键拖拽它</td></tr>
-<tr><td>暂时不想被打扰</td><td>双击小角色，进入休眠（会显示 zzz）</td></tr>
-<tr><td>恢复提醒</td><td>再次双击小角色</td></tr>
-<tr><td>修改设置</td><td>右键点击屏幕右下角托盘图标 → 设置</td></tr>
-<tr><td>退出程序</td><td>右键点击屏幕右下角托盘图标 → 退出</td></tr>
+<tr><td>🔀 移动小角色位置</td><td>用鼠标左键拖拽它</td></tr>
+<tr><td>😴 暂时不想被打扰</td><td>双击小角色，进入休眠（会显示 zzz）</td></tr>
+<tr><td>⏰ 恢复提醒</td><td>再次双击小角色</td></tr>
+<tr><td>⚙️ 修改设置</td><td>右键点击屏幕右下角托盘图标 → 设置</td></tr>
+<tr><td>❌ 退出程序</td><td>右键点击屏幕右下角托盘图标 → 退出</td></tr>
 </tbody>
 </table>
-<blockquote>提示：程序启动后会缩到屏幕右下角的系统托盘里（就是时间旁边那一排小图标）。</blockquote>
+<blockquote>💡 提示：程序启动后会缩到屏幕右下角的系统托盘里（就是时间旁边那一排小图标）。</blockquote>
 
-<h2>设置说明</h2>
+<h2>⚙️ 设置说明</h2>
 <p>右键托盘图标 → 点击"设置"，可以调整以下内容：</p>
 
-<h3>提醒相关</h3>
+<h3>⏰ 提醒相关</h3>
 <table>
 <thead>
 <tr><th>设置项</th><th>说明</th><th>默认值</th></tr>
 </thead>
 <tbody>
-<tr><td>提醒间隔</td><td>多久提醒一次（分钟）</td><td>30 分钟</td></tr>
-<tr><td>提醒时长</td><td>每次提醒持续多久（秒）</td><td>60 秒</td></tr>
-<tr><td>提醒次数</td><td>一天最多提醒几次</td><td>30 次</td></tr>
-<tr><td>提醒文字</td><td>提醒时显示的话</td><td>该喝水了哦宝宝！</td></tr>
-<tr><td>截止时间</td><td>几点后不再提醒</td><td>23:00</td></tr>
+<tr><td>🔁 提醒间隔</td><td>多久提醒一次（分钟）</td><td>30 分钟</td></tr>
+<tr><td>⏱️ 提醒时长</td><td>每次提醒持续多久（秒）</td><td>60 秒</td></tr>
+<tr><td>🔢 提醒次数</td><td>一天最多提醒几次</td><td>30 次</td></tr>
+<tr><td>💬 提醒文字</td><td>提醒时显示的话</td><td>该喝水了哦宝宝！</td></tr>
+<tr><td>🌙 截止时间</td><td>几点后不再提醒</td><td>23:00</td></tr>
 </tbody>
 </table>
 
-<h3>外观相关</h3>
+<h3>🎨 外观相关</h3>
 <table>
 <thead>
 <tr><th>设置项</th><th>说明</th></tr>
 </thead>
 <tbody>
-<tr><td>GIF 路径</td><td>小角色的动画文件</td></tr>
-<tr><td>文字颜色</td><td>提醒文字的颜色</td></tr>
-<tr><td>字体大小</td><td>文字显示大小</td></tr>
+<tr><td>🖼️ GIF 路径</td><td>小角色的动画文件</td></tr>
+<tr><td>🌈 文字颜色</td><td>提醒文字的颜色</td></tr>
+<tr><td>🔤 字体大小</td><td>文字显示大小</td></tr>
 </tbody>
 </table>
 
-<h3>天气功能（可选）</h3>
+<h3>🌤️ 天气功能（可选）</h3>
 <p>想在桌面上看到天气信息？按以下步骤设置：</p>
 <ol>
-<li>打开 <a href="https://lbs.amap.com/api/webservice/guide/api-advanced/weatherinfo">高德开放平台</a>，注册一个账号</li>
-<li>创建应用，获取一个 <strong>Web 服务</strong> 类型的 API Key</li>
-<li>在设置里填入你的 API Key</li>
-<li>填入你所在城市的代码（例如：北京 <code>110000</code>、上海 <code>310000</code>、广州 <code>440100</code>）</li>
+<li>🌐 打开 <a href="https://lbs.amap.com/api/webservice/guide/api-advanced/weatherinfo">高德开放平台</a>，注册一个账号</li>
+<li>🔑 创建应用，获取一个 <strong>Web 服务</strong> 类型的 API Key</li>
+<li>📝 在设置里填入你的 API Key</li>
+<li>🏙️ 填入你所在城市的代码（例如：北京 <code>110000</code>、上海 <code>310000</code>、广州 <code>440100</code>）</li>
 </ol>
 <p>设置完成后，程序会自动显示当前天气和明天的天气预报。</p>
 
-<h2>建议提醒频率</h2>
+<h2>📋 建议提醒频率</h2>
 <table>
 <thead>
 <tr><th>你的情况</th><th>建议间隔</th></tr>
 </thead>
 <tbody>
-<tr><td>坐办公室工作</td><td>30～45 分钟</td></tr>
-<tr><td>在家办公</td><td>45～60 分钟</td></tr>
-<tr><td>专注模式（不想被频繁打扰）</td><td>60 分钟</td></tr>
+<tr><td>🏢 坐办公室工作</td><td>30～45 分钟</td></tr>
+<tr><td>🏠 在家办公</td><td>45～60 分钟</td></tr>
+<tr><td>🎯 专注模式（不想被频繁打扰）</td><td>60 分钟</td></tr>
 </tbody>
 </table>
 
-<h2>常见问题</h2>
+<h2>❓ 常见问题</h2>
 
-<p><strong>启动后找不到小角色在哪？</strong></p>
+<p><strong>👻 启动后找不到小角色在哪？</strong></p>
 <blockquote>可能跑到屏幕外面去了。右键托盘图标 → 设置，把窗口坐标改成 100, 100，保存后就能看到了。或者删除配置文件重新来：找到 <code>%APPDATA%\DrinkReminder\config.dat</code> 这个文件删掉，重启程序即可。</blockquote>
 
-<p><strong>天气不显示？</strong></p>
+<p><strong>🌧️ 天气不显示？</strong></p>
 <blockquote>检查三件事：① API Key 填对了没 ② 城市代码填对了没 ③ 电脑能不能上网</blockquote>
 
-<p><strong>换了 GIF 没效果？</strong></p>
+<p><strong>🖼️ 换了 GIF 没效果？</strong></p>
 <blockquote>确保 GIF 文件放在和程序同一个文件夹里，并且设置里的文件名和实际文件名完全一致（包括大小写）。</blockquote>
 
-<p><strong>怎么让程序开机自动启动？</strong></p>
+<p><strong>🚀 怎么让程序开机自动启动？</strong></p>
 <blockquote>设置里有"开机自启"选项，默认就是开启的。</blockquote>
 
-<p><strong>怎么彻底关闭程序？</strong></p>
+<p><strong>🚪 怎么彻底关闭程序？</strong></p>
 <blockquote>右键屏幕右下角托盘图标，选择"退出"。直接关闭窗口是关不掉的哦。</blockquote>
 
 <hr>
-<p>多喝水，保持健康！</p>
+<p>💧 <strong>多喝水，保持健康！</strong></p>
 </body>
 </html>
