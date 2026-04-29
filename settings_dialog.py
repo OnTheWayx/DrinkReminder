@@ -96,7 +96,7 @@ class SettingsDialog:
         self.subtitle_enabled_var = tk.IntVar(value=cfg.get('subtitle_enabled', 0))
         self.subtitle_text_var = tk.StringVar(value=cfg.get('subtitle_text', '该喝水啦~'))
         self.subtitle_position_var = tk.StringVar(value=cfg.get('subtitle_position', 'right'))
-        self.subtitle_font_var = tk.IntVar(value=cfg.get('subtitle_font_size', 128))
+        self.subtitle_font_var = tk.StringVar(value=str(cfg.get('subtitle_font_size', 128)))
 
         r = 0
         tk.Checkbutton(grp_sub, text="启用大号字幕提醒", variable=self.subtitle_enabled_var, bg='#f0f0f0').grid(row=r, column=0, columnspan=2, sticky='w', **_PAD)
@@ -111,7 +111,7 @@ class SettingsDialog:
             tk.Radiobutton(pos_frame, text=text, variable=self.subtitle_position_var, value=val, bg='#f0f0f0').pack(side=tk.LEFT, padx=2)
         r += 1
         tk.Label(grp_sub, text="字体大小:", bg='#f0f0f0').grid(row=r, column=0, sticky='w', **_PAD)
-        tk.Spinbox(grp_sub, from_=20, to=999, textvariable=self.subtitle_font_var, width=6).grid(row=r, column=1, sticky='w', **_PAD)
+        tk.Entry(grp_sub, textvariable=self.subtitle_font_var, width=6).grid(row=r, column=1, sticky='w', **_PAD)
 
         # ── 天气设置 ──
         grp3 = tk.LabelFrame(outer, text=" 天气 ", padx=8, pady=6, bg='#f0f0f0')
@@ -200,7 +200,7 @@ class SettingsDialog:
             'subtitle_enabled': self.subtitle_enabled_var.get(),
             'subtitle_text': self.subtitle_text_var.get(),
             'subtitle_position': self.subtitle_position_var.get(),
-            'subtitle_font_size': self.subtitle_font_var.get(),
+            'subtitle_font_size': int(self.subtitle_font_var.get()),
         }
         self.dialog.destroy()
 
